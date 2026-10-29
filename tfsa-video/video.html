@@ -1,0 +1,386 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:K;src:url(kalam-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:K;src:url(kalam-latin-700-normal.woff2);font-weight:700}
+html,body{margin:0;background:#fcfcfa;overflow:hidden}
+svg{display:block;width:100vw;height:100vh}
+text{font-family:K;}
+.an,.scene,.cam{transform-box:fill-box;transform-origin:center}
+.cam{transform-box:view-box;transform-origin:360px 700px}
+</style></head><body>
+<svg id="v" viewBox="0 0 720 1280" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <filter id="r0"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="1"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
+ <filter id="r1"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
+ <filter id="r2"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="13"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
+ <pattern id="hatchB" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#3d8bd4"/><line x1="0" y1="0" x2="0" y2="8" stroke="#2f72b5" stroke-width="3"/></pattern>
+ <pattern id="hatchR" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#e5483f"/><line x1="0" y1="0" x2="0" y2="8" stroke="#c4352d" stroke-width="3"/></pattern>
+ <pattern id="hatchG" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#b9b9b9"/><line x1="0" y1="0" x2="0" y2="8" stroke="#a2a2a2" stroke-width="3"/></pattern>
+</defs>
+<rect width="720" height="1280" fill="#fcfcfa"/>
+<g id="root"></g>
+</svg>
+<script>
+const AMP = window.AMP || [];
+const INK = '#1b1b1b', BLUE = '#3d8bd4', RED = '#e0443b', GREEN = '#3fae49';
+
+// ---------- helpers ----------
+const txt = (x, y, s, size = 46, o = {}) =>
+  `<text x="${x}" y="${y}" font-size="${size}" font-weight="${o.w || 700}" fill="${o.fill || INK}" text-anchor="${o.anchor || 'middle'}" ${o.extra || ''}>${s}</text>`;
+const A = (tin, anim, body, o = {}) =>
+  `<g class="an" data-in="${tin}" data-a="${anim}" ${o.dur ? `data-dur="${o.dur}"` : ''} ${o.out ? `data-out="${o.out}"` : ''} ${o.attr || ''}><g transform="translate(${o.x || 0},${o.y || 0}) scale(${o.s || 1})">${body}</g></g>`;
+const line = (x1, y1, x2, y2, c = INK, w = 5) => `<path d="M${x1},${y1} L${x2},${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" fill="none" pathLength="1"/>`;
+const bigX = (r = 60) => `<circle r="${r * 1.25}" fill="#fff" stroke="${RED}" stroke-width="7" pathLength="1"/>${line(-r * .6, -r * .6, r * .6, r * .6, RED, 14)}${line(r * .6, -r * .6, -r * .6, r * .6, RED, 14)}`;
+const check = (r = 50, c = GREEN) => `<path d="M${-r},0 L${-r * .3},${r * .7} L${r},${-r * .8}" stroke="${c}" stroke-width="${r * .28}" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="1"/>`;
+const bill = (w = 120, h = 62) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="6" fill="#8fd18a" stroke="#2c6b2a" stroke-width="4"/><rect x="${-w / 2 + 8}" y="${-h / 2 + 8}" width="${w - 16}" height="${h - 16}" rx="4" fill="none" stroke="#2c6b2a" stroke-width="2"/><circle r="${h * .28}" fill="#c9eec5" stroke="#2c6b2a" stroke-width="2.5"/>${txt(0, h * .15, '$', h * .42, { fill: '#2c6b2a' })}`;
+const coin = () => `<ellipse rx="34" ry="12" fill="#f2c94c" stroke="#8a6a10" stroke-width="3.5"/>`;
+const coins = (n = 4) => Array.from({ length: n }, (_, i) => `<g transform="translate(0,${-i * 13})">${coin()}</g>`).join('');
+const arrowR = (len = 120, c = INK, w = 5) => `<path d="M0,0 L${len},0 M${len - 18},-14 L${len},0 L${len - 18},14" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>`;
+const arrowUp = (len = 90, c = GREEN) => `<path d="M0,0 L0,${-len} M-20,${-len + 22} L0,${-len} L20,${-len + 22}" stroke="${c}" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>`;
+const warn = (s = 1) => `<g transform="scale(${s})"><path d="M0,-62 L66,52 L-66,52 Z" fill="${RED}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><rect x="-7" y="-28" width="14" height="48" rx="6" fill="#fff"/><circle cy="36" r="8" fill="#fff"/></g>`;
+const card = (label, icon, w = 150, h = 120, fill = '#fff') => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="14" fill="${fill}" stroke="${INK}" stroke-width="4.5"/><g transform="translate(0,${-h * .12})">${icon}</g>${txt(0, h / 2 - 14, label, 32)}`;
+const iconCash = `<g transform="scale(.55)">${bill()}</g>`;
+const iconGIC = `<rect x="-24" y="-30" width="48" height="56" rx="4" fill="#fff6dc" stroke="${INK}" stroke-width="3.5"/><path d="M-14,-16 H14 M-14,-6 H14 M-14,4 H6" stroke="${INK}" stroke-width="3"/><circle cx="12" cy="16" r="8" fill="${RED}" stroke="${INK}" stroke-width="2"/>`;
+const iconStock = `<path d="M-34,24 L-34,-28 M-34,24 L36,24" stroke="${INK}" stroke-width="3.5" fill="none"/><path d="M-28,14 L-10,-2 L4,8 L30,-22" stroke="${GREEN}" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M18,-22 L30,-22 L30,-10" stroke="${GREEN}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+const iconETF = `<circle r="28" fill="${BLUE}" stroke="${INK}" stroke-width="3.5"/><path d="M0,0 L0,-28 A28,28 0 0 1 26,10 Z" fill="#f2c94c" stroke="${INK}" stroke-width="3"/><path d="M0,0 L26,10 A28,28 0 0 1 -12,25 Z" fill="${GREEN}" stroke="${INK}" stroke-width="3"/>`;
+// cardboard box, origin = bottom center
+const box = (label = 'TFSA', w = 300, h = 190, stuffed = '') => {
+  const d = 46;
+  return `<path d="M${-w / 2},${-h} L${-w / 2 + d},${-h - d} L${w / 2 + d},${-h - d} L${w / 2},${-h} Z" fill="#b98b52" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+  ${stuffed}
+  <path d="M${w / 2},${-h} L${w / 2 + d},${-h - d} L${w / 2 + d},${-d} L${w / 2},0 Z" fill="#c99a5e" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="${-w / 2}" y="${-h}" width="${w}" height="${h}" fill="#e2b97e" stroke="${INK}" stroke-width="5"/>
+  <path d="M${-w / 2},${-h} L${-w / 2 - 40},${-h - 60} L${w / 2 - 70},${-h - 60} L${w / 2 - 30},${-h}" fill="#e9c58f" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M${w / 2 + d},${-h - d} L${w / 2 + d + 40},${-h - d - 40} L${w / 2 + 20},${-h + 10} L${w / 2},${-h}" fill="#d9ab6c" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="${-w / 2 + 40}" y="${-h + 50}" width="${w - 80}" height="86" rx="10" fill="#fff" stroke="${INK}" stroke-width="4"/>
+  ${txt(0, -h + 112, label, 60)}
+  <ellipse cx="20" cy="10" rx="${w * .7}" ry="14" fill="#000" opacity=".07"/>`;
+};
+const calendar = (top, big, sub = '', w = 170) => `<rect x="${-w / 2}" y="-90" width="${w}" height="180" rx="12" fill="#fff" stroke="${INK}" stroke-width="5"/><path d="M${-w / 2},-48 V-78 Q${-w / 2},-90 ${-w / 2 + 12},-90 H${w / 2 - 12} Q${w / 2},-90 ${w / 2},-78 V-48 Z" fill="${RED}" stroke="${INK}" stroke-width="5"/>${txt(0, -58, top, 30, { fill: '#fff' })}<circle cx="-40" cy="-92" r="8" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="40" cy="-92" r="8" fill="#fff" stroke="${INK}" stroke-width="4"/>${txt(0, 30, big, 66)}${txt(0, 72, sub, 28, { w: 400 })}`;
+const laptop = (l1, l2) => `<rect x="-140" y="-170" width="280" height="180" rx="12" fill="#f3f7fb" stroke="${INK}" stroke-width="5"/><rect x="-140" y="-170" width="280" height="38" rx="12" fill="#2a5e8e"/>${txt(0, -142, l1, 26, { fill: '#fff' })}${txt(0, -70, l2, 34)}<rect x="-80" y="-48" width="160" height="30" rx="8" fill="${GREEN}" stroke="${INK}" stroke-width="3"/>${txt(0, -26, 'CHECK', 22, { fill: '#fff' })}<path d="M-170,10 L170,10 L190,34 L-190,34 Z" fill="#d6dde4" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`;
+const suitcase = () => `<rect x="-26" y="-118" width="52" height="30" rx="10" fill="none" stroke="${INK}" stroke-width="7"/><rect x="-70" y="-96" width="140" height="96" rx="12" fill="#c0703a" stroke="${INK}" stroke-width="5"/><path d="M-36,-96 V0 M36,-96 V0" stroke="${INK}" stroke-width="4"/><rect x="-30" y="-62" width="60" height="22" rx="4" fill="#fff" stroke="${INK}" stroke-width="3"/>`;
+const leaf = (s = 1, c = RED) => `<path transform="scale(${s}) translate(-50,-50)" d="M50,5 L58,22 L68,18 L64,42 L80,28 L84,36 L96,34 L90,50 L96,54 L76,70 L80,78 L54,74 L55,95 L45,95 L46,74 L20,78 L24,70 L4,54 L10,50 L4,34 L16,36 L20,28 L36,42 L32,18 L42,22 Z" fill="${c}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`;
+const flag = () => `<rect x="-120" y="-66" width="240" height="132" fill="#fff" stroke="${INK}" stroke-width="5"/><rect x="-120" y="-66" width="60" height="132" fill="${RED}" stroke="${INK}" stroke-width="5"/><rect x="60" y="-66" width="60" height="132" fill="${RED}" stroke="${INK}" stroke-width="5"/>${leaf(.8)}<path d="M-120,-66 V140" stroke="${INK}" stroke-width="7"/>`;
+const piggy = () => `<ellipse cx="0" cy="0" rx="110" ry="80" fill="#f7b9c9" stroke="${INK}" stroke-width="5"/><path d="M-60,-60 L-40,-110 L-20,-70" fill="#f7b9c9" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><ellipse cx="-108" cy="10" rx="26" ry="30" fill="#f49ab2" stroke="${INK}" stroke-width="5"/><circle cx="-114" cy="2" r="4" fill="${INK}"/><circle cx="-102" cy="18" r="4" fill="${INK}"/><circle cx="-60" cy="-20" r="7" fill="${INK}"/><rect x="-20" y="-80" width="50" height="10" rx="5" fill="${INK}"/><path d="M-60,70 V100 M-20,76 V104 M30,76 V104 M70,66 V96" stroke="${INK}" stroke-width="14" stroke-linecap="round"/><path d="M108,-10 q24,-10 14,-30 q-10,-14 -18,0" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>`;
+const bubble = (w, h, body) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${h / 2}" fill="#fff" stroke="${INK}" stroke-width="5"/><circle cx="${-w * .18}" cy="${h / 2 + 34}" r="16" fill="#fff" stroke="${INK}" stroke-width="5"/><circle cx="${-w * .24}" cy="${h / 2 + 72}" r="9" fill="#fff" stroke="${INK}" stroke-width="4.5"/>${body}`;
+const stamp = (s, c = RED, size = 54, rot = -8) => `<g transform="rotate(${rot})"><rect x="${-s.length * size * .28 - 24}" y="${-size * .85}" width="${s.length * size * .56 + 48}" height="${size * 1.25}" rx="10" fill="#fff" stroke="${c}" stroke-width="7"/>${txt(0, size * .2, s, size, { fill: c })}</g>`;
+const pill = (s, bg, fg = '#fff', size = 40, padX = 30) => `<rect x="${-s.length * size * .26 - padX}" y="${-size * .82}" width="${s.length * size * .52 + padX * 2}" height="${size * 1.35}" rx="${size * .67}" fill="${bg}" stroke="${INK}" stroke-width="4.5"/>${txt(0, size * .22, s, size, { fill: fg })}`;
+const doc = (title, w = 220, h = 270) => `<g transform="rotate(4)"><rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="6" fill="#fff" stroke="${INK}" stroke-width="5"/>${txt(0, -h / 2 + 44, title, 34)}<path d="M${-w / 2 + 24},${-h / 2 + 70} H${w / 2 - 24} M${-w / 2 + 24},${-h / 2 + 100} H${w / 2 - 50} M${-w / 2 + 24},${-h / 2 + 130} H${w / 2 - 24}" stroke="#8a8a8a" stroke-width="4"/>${txt(-w / 2 + 24, -h / 2 + 182, 'Gross', 28, { anchor: 'start', w: 400 })}${txt(w / 2 - 24, -h / 2 + 182, '$$$', 28, { anchor: 'end' })}${txt(-w / 2 + 24, -h / 2 + 222, 'Tax', 28, { anchor: 'start', fill: RED })}${txt(w / 2 - 24, -h / 2 + 222, '−$?', 28, { anchor: 'end', fill: RED })}</g>`;
+const bell = () => `<path d="M-40,30 Q-40,-50 0,-52 Q40,-50 40,30 L52,44 H-52 Z" fill="#f2c94c" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><circle cy="56" r="11" fill="#f2c94c" stroke="${INK}" stroke-width="5"/><path d="M-70,-30 q-14,24 0,52 M70,-30 q14,24 0,52" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+const sparks = (r = 120) => Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); return line(c * r, s * r, c * (r + 30), s * (r + 30), INK, 5); }).join('');
+
+// ---------- character ----------
+const POSES = { // [shoulder, elbow] angles (deg from straight down, + = outward) for R and L arm
+  idle: { R: [22, 12], L: [22, 12] },
+  point: { R: [105, 128], L: [22, 12] },
+  pointUp: { R: [150, 168], L: [22, 12] },
+  pointL: { R: [22, 12], L: [105, 128] },
+  shrug: { R: [62, 150], L: [62, 150] },
+  think: { R: [18, 205], L: [30, 330] },
+  present: { R: [58, 88], L: [58, 88] },
+  thumbs: { R: [40, 160], L: [22, 12] },
+  hold: { R: [22, 12], L: [50, 105] },
+  holdR: { R: [50, 105], L: [22, 12] },
+  hips: { R: [40, -50], L: [40, -50] },
+};
+let charId = 0;
+const character = (o) => {
+  const id = 'c' + (charId++);
+  return `<g class="char" id="${id}" data-x="${o.x}" data-y="${o.y}" data-s="${o.s || 1}" data-flip="${o.flip ? -1 : 1}" data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-hand="${o.hand || ''}">
+   <g class="body">
+    <ellipse cx="0" cy="2" rx="125" ry="15" fill="#000" opacity=".09"/>
+    <path d="M-24,-205 L-30,-12 M24,-205 L30,-12" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>
+    <ellipse cx="-40" cy="-8" rx="20" ry="9" fill="${INK}"/><ellipse cx="40" cy="-8" rx="20" ry="9" fill="${INK}"/>
+    <path d="M-44,-388 Q-58,-300 -64,-196 L64,-196 Q58,-300 44,-388 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M-42,-370 Q-54,-290 -58,-200 L-40,-200 Q-38,-300 -30,-372 Z" fill="#e8e8e8"/>
+    <path d="M-20,-388 L0,-366 L20,-388" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-9,-374 L9,-374 L6,-360 L-6,-360 Z M-6,-360 L-14,-270 L0,-250 L14,-270 L6,-360 Z" fill="${BLUE}" stroke="#1d3f66" stroke-width="3.5" stroke-linejoin="round"/>
+    <g class="head" transform="translate(0,-470)">
+      <circle r="86" fill="#fff" stroke="${INK}" stroke-width="5"/>
+      <path d="M-62,10 A62,62 0 0 0 40,60" fill="none" stroke="#e6e6e6" stroke-width="12" stroke-linecap="round"/>
+      <g class="brows"></g><g class="eyes"></g><g class="mouth"></g>
+    </g>
+   </g>
+   <g class="arms"></g>
+  </g>`;
+};
+
+// ---------- scenes ----------
+const SC = [];
+const scene = (s, e, body) => SC.push({ s, e, body });
+const HEAD = (y, s, size = 60, tin = 0, o = {}) => A(tin, 'up', txt(0, 0, s, size, o), { x: 360, y });
+
+// 1. Hook
+scene(0, 3.18,
+  A(0.15, 'pop', bubble(470, 190, txt(0, -12, 'TFSA =', 66) + txt(0, 56, 'Savings Account?', 50, { fill: BLUE })), { x: 380, y: 330 }) +
+  A(1.6, 'pop', txt(0, 0, '?', 110, { fill: RED }), { x: 600, y: 200 }) +
+  A(2.0, 'pop', txt(0, 0, '?', 80, { fill: RED }), { x: 140, y: 230 }) +
+  character({ x: 300, y: 1170, s: .95, pose: [[0, 'think']], expr: [[0, 'think']] }));
+
+// 2. Tax-free savings account... "Galat"
+scene(3.18, 8.82,
+  A(3.25, 'up', txt(0, 0, 'Tax-Free', 74, { fill: BLUE }), { x: 360, y: 170 }) +
+  A(3.9, 'up', txt(0, 0, 'Savings Account', 64), { x: 360, y: 250 }) +
+  A(4.6, 'pop', piggy(), { x: 470, y: 560, s: 1.1 }) +
+  A(6.2, 'pop', pill('No tax', GREEN, '#fff', 40), { x: 470, y: 720 }) +
+  A(7.55, 'stamp', bigX(80), { x: 470, y: 560 }) +
+  A(7.6, 'stamp', stamp('GALAT!', RED, 64), { x: 470, y: 820 }) +
+  character({ x: 190, y: 1180, s: .72, pose: [[3.18, 'point'], [7.4, 'shrug']], expr: [[3.18, 'smile'], [7.5, 'shock']] }));
+
+// 3. Thousands lost
+scene(8.82, 11.40,
+  A(8.9, 'up', txt(0, 0, 'Yeh galti =', 58), { x: 360, y: 170 }) +
+  A(9.4, 'stamp', txt(0, 0, '−$1,000s', 100, { fill: RED }), { x: 360, y: 290 }) +
+  [[-170, 520, -40, -260], [150, 560, 60, -300], [-60, 640, -110, -330], [210, 700, 130, -260], [40, 470, 20, -320]].map(([x, y, dx, dy], i) =>
+    A(9.0 + i * .18, 'fly', `<g transform="rotate(${i * 23 - 30})">${bill()}</g>`, { x: 360 + x * .9, y, attr: `data-dx="${dx}" data-dy="${dy}"`, dur: 2.2 })).join('') +
+  character({ x: 360, y: 1180, s: .82, pose: [[8.82, 'shrug']], expr: [[8.82, 'shock']] }));
+
+// 4. TFSA is not a savings account
+scene(11.40, 14.38,
+  A(11.45, 'up', txt(0, 0, 'Sach yeh hai...', 56, { fill: '#666' }), { x: 360, y: 180 }) +
+  A(12.0, 'pop', txt(0, 0, 'TFSA', 120, { fill: BLUE }), { x: 360, y: 360 }) +
+  A(12.6, 'stamp', txt(0, 0, '≠', 120, { fill: RED }), { x: 360, y: 480 }) +
+  A(12.9, 'up', txt(0, 0, 'Savings Account', 66), { x: 360, y: 600 }) +
+  A(13.1, 'draw', line(150, 0, 570, 0, RED, 9), { y: 582 }) +
+  character({ x: 360, y: 1190, s: .78, pose: [[11.4, 'pointUp']], expr: [[11.4, 'smile']] }));
+
+// 5. It's a container
+const items = [['Cash', iconCash, 16.6], ['GIC', iconGIC, 18.9], ['Stocks', iconStock, 19.9], ['ETF', iconETF, 21.0]];
+scene(14.38, 22.78,
+  A(14.45, 'up', txt(0, 0, 'TFSA = ek DABBA', 64), { x: 360, y: 160 }) +
+  A(15.4, 'up', txt(0, 0, '(a container)', 40, { fill: '#666', w: 400 }), { x: 360, y: 215 }) +
+  A(14.9, 'pop', box('TFSA'), { x: 440, y: 1130 }) +
+  items.map(([l, ic, t], i) => A(t, 'drop', card(l, ic), { x: 175 + (i % 2) * 190 + 80, y: 380 + Math.floor(i / 2) * 160 })).join('') +
+  A(20.5, 'draw', `<path d="M0,0 C30,60 30,120 0,170" stroke="${INK}" stroke-width="5" fill="none" stroke-dasharray="0" pathLength="1"/><path d="M-16,150 L0,172 L18,152" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round" pathLength="1"/>`, { x: 640, y: 560 }) +
+  character({ x: 130, y: 1190, s: .6, pose: [[14.38, 'point']], expr: [[14.38, 'smile']] }));
+
+// 6. Growth = no tax, withdraw = no tax
+const gains = [['Interest', 23.4], ['Dividend', 25.6], ['Share price', 27.0]];
+scene(22.78, 32.38,
+  A(22.85, 'up', txt(0, 0, 'Dabbe ke andar growth', 54), { x: 360, y: 160 }) +
+  A(22.9, 'pop', box('TFSA', 300, 190, `<g transform="translate(20,-205)">${coins(3)}</g><g transform="translate(-60,-200) rotate(-12) scale(.6)">${bill()}</g><g transform="translate(90,-200) rotate(10) scale(.6)">${bill()}</g>`), { x: 440, y: 1130 }) +
+  gains.map(([l, t], i) => A(t, 'up', `${arrowUp(60)}${txt(30, -20, l, 44, { anchor: 'start' })}`, { x: 200, y: 340 + i * 95 })).join('') +
+  A(28.2, 'stamp', stamp('TAX = $0', GREEN, 66, -6), { x: 360, y: 680 }) +
+  A(29.6, 'up', `${arrowR(110, INK)}${txt(130, 14, 'Nikalo → No tax', 42, { anchor: 'start' })}`, { x: 120, y: 790 }) +
+  A(30.4, 'pop', check(34), { x: 640, y: 780 }) +
+  character({ x: 130, y: 1190, s: .6, pose: [[22.78, 'present'], [28.0, 'thumbs']], expr: [[22.78, 'smile']] }));
+
+// 7. Limit
+scene(32.38, 34.80,
+  A(32.45, 'up', txt(0, 0, 'Lekin...', 66, { fill: '#666' }), { x: 360, y: 170 }) +
+  A(32.9, 'stamp', stamp('LIMIT', RED, 90, -5), { x: 360, y: 330 }) +
+  A(32.6, 'pop', box('TFSA'), { x: 440, y: 1000 }) +
+  A(33.4, 'pop', warn(1), { x: 450, y: 660 }) +
+  character({ x: 130, y: 1190, s: .6, pose: [[32.38, 'shrug']], expr: [[32.38, 'worry']] }));
+
+// 8. 2026 room $7000, carry forward
+scene(34.80, 41.50,
+  A(34.85, 'pop', calendar('YEAR', '2026', 'new room'), { x: 220, y: 300 }) +
+  A(35.6, 'up', txt(0, 0, 'sirf', 44, { fill: '#666', w: 400 }), { x: 500, y: 250 }) +
+  A(35.9, 'count', txt(0, 0, '$7,000', 92, { fill: GREEN, extra: 'data-n="7000" data-pre="$"' }), { x: 510, y: 345 }) +
+  A(38.3, 'up', txt(0, 0, 'Unused room?', 50), { x: 360, y: 520 }) +
+  A(38.9, 'up', txt(0, 0, 'Carry forward ho jata hai!', 44, { fill: BLUE }), { x: 360, y: 580 }) +
+  ['2024', '2025', '2026'].map((y, i) => A(39.4 + i * .45, 'drop', `<rect x="-90" y="-36" width="180" height="72" rx="10" fill="${['#cfe3f6', '#a9cdef', '#7fb4e6'][i]}" stroke="${INK}" stroke-width="4.5"/>${txt(0, 13, y, 40)}`, { x: 500, y: 960 - i * 82 })).join('') +
+  A(40.9, 'draw', `<path d="M0,0 C-60,-40 -60,-140 0,-170" stroke="${INK}" stroke-width="5" fill="none" pathLength="1"/>`, { x: 380, y: 950 }) +
+  character({ x: 160, y: 1190, s: .62, pose: [[34.8, 'point'], [38.3, 'present']], expr: [[34.8, 'smile']] }));
+
+// 9. Since 2009 -> $109,000
+scene(41.50, 49.34,
+  A(41.6, 'up', txt(0, 0, 'Canada mein since 2009?', 52), { x: 360, y: 160 }) +
+  A(42.2, 'pop', flag(), { x: 360, y: 340 }) +
+  A(45.3, 'up', txt(0, 0, 'Total room up to', 48, { fill: '#666' }), { x: 360, y: 560 }) +
+  A(45.8, 'count', txt(0, 0, '$109,000', 110, { fill: GREEN, extra: 'data-n="109000" data-pre="$"' }), { x: 360, y: 690 }) +
+  A(47.6, 'pop', sparks(150), { x: 360, y: 655, s: 1.5 }) +
+  character({ x: 360, y: 1200, s: .62, pose: [[41.5, 'pointUp'], [45.5, 'thumbs']], expr: [[41.5, 'smile'], [45.5, 'happy']] }));
+
+// 10. Newcomers + CRA My Account
+scene(49.34, 59.0,
+  A(49.4, 'up', txt(0, 0, 'Newcomer ho?', 62, { fill: BLUE }), { x: 360, y: 160 }) +
+  A(50.6, 'up', txt(0, 0, 'Room = jis saal aaye', 48), { x: 360, y: 240 }) +
+  A(51.4, 'up', txt(0, 0, 'uss saal se', 48), { x: 360, y: 300 }) +
+  A(50.0, 'pop', suitcase(), { x: 120, y: 1185, s: .8 }) +
+  A(53.0, 'pop', laptop('CRA My Account', 'TFSA room'), { x: 440, y: 620 }) +
+  A(57.0, 'stamp', stamp('Apna hisaab rakho', BLUE, 40, -4), { x: 440, y: 790 }) +
+  character({ x: 250, y: 1190, s: .6, pose: [[49.34, 'hold'], [53, 'point']], expr: [[49.34, 'smile']] }));
+
+// 11. Trap: withdraw, re-contribute same year => penalty
+scene(59.0, 71.6,
+  A(59.05, 'pop', warn(.75), { x: 160, y: 170 }) +
+  A(59.2, 'up', txt(0, 0, 'TRAP!', 90, { fill: RED, anchor: 'start' }), { x: 230, y: 200 }) +
+  A(59.9, 'pop', box('TFSA', 220, 140), { x: 160, y: 520, s: 1 }) +
+  A(60.3, 'draw', arrowR(120), { x: 300, y: 430 }) +
+  A(60.6, 'pop', bill(), { x: 520, y: 430 }) +
+  A(60.7, 'up', txt(0, 0, 'Withdraw', 40), { x: 520, y: 500 }) +
+  A(62.8, 'pop', calendar('JAN', '1', 'next year', 140), { x: 160, y: 760, s: .9 }) +
+  A(63.5, 'up', txt(0, 0, 'Room wapas', 46, { anchor: 'start', fill: GREEN }), { x: 270, y: 740 }) +
+  A(64.0, 'up', txt(0, 0, 'tab milta hai', 46, { anchor: 'start', fill: GREEN }), { x: 270, y: 795 }) +
+  A(65.0, 'up', txt(0, 0, 'Usi saal wapas daala?', 44), { x: 400, y: 905 }) +
+  A(66.6, 'stamp', stamp('OVER-CONTRIBUTION', RED, 40, -5), { x: 410, y: 1000 }) +
+  A(69.5, 'pop', pill('1% penalty / month', RED, '#fff', 38), { x: 430, y: 1110 }) +
+  character({ x: 115, y: 1200, s: .45, pose: [[59, 'shrug'], [66.5, 'shrug']], expr: [[59, 'worry'], [66.5, 'shock']] }));
+
+// 12. Biggest mistake: cash
+scene(71.6, 81.54,
+  A(71.65, 'up', txt(0, 0, 'Sabse badi galti:', 58), { x: 360, y: 160 }) +
+  A(72.7, 'stamp', txt(0, 0, 'Dabba = sirf CASH', 64, { fill: RED }), { x: 360, y: 250 }) +
+  A(72.9, 'pop', box('TFSA', 300, 190, [[-80, -230, -14], [10, -238, 8], [90, -228, 16], [-30, -260, -4], [60, -268, 10]].map(([x, y, r]) => `<g transform="translate(${x},${y}) rotate(${r}) scale(.7)">${bill()}</g>`).join('')), { x: 440, y: 760 }) +
+  A(75.2, 'up', txt(0, 0, 'Cash ~2% · 20 saal mein', 48), { x: 400, y: 920 }) +
+  A(78.0, 'count', txt(0, 0, '≈ $10,400', 96, { fill: '#777', extra: 'data-n="10400" data-pre="≈ $"' }), { x: 420, y: 1040 }) +
+  character({ x: 115, y: 1200, s: .45, pose: [[71.6, 'pointUp'], [77, 'shrug']], expr: [[71.6, 'worry']] }));
+
+// 13. Invested 7%
+const chart = (tin) => `
+  <path d="M60,0 H600 M80,20 V-560" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+  ${A(tin, 'grow', `<rect x="140" y="-215" width="160" height="215" fill="url(#hatchG)" stroke="${INK}" stroke-width="5"/>`, { dur: .9 })}
+  ${A(tin + .1, 'up', txt(220, -235, '$10,400', 44, { fill: '#666' }))}
+  ${txt(220, 50, 'Cash', 44)}
+  ${A(tin + 1.6, 'grow', `<rect x="370" y="-520" width="160" height="520" fill="url(#hatchB)" stroke="${INK}" stroke-width="5"/>`, { dur: 2.4 })}
+  ${A(tin + 2.6, 'count', txt(450, -540, '$27,100', 50, { fill: BLUE, extra: 'data-n="27100" data-pre="$"' }), { dur: 1.6 })}
+  ${txt(450, 50, 'Invested', 44)}`;
+scene(81.54, 88.24,
+  A(81.6, 'up', txt(0, 0, 'Wahi $7,000 invest kiya?', 54), { x: 360, y: 160 }) +
+  A(82.4, 'up', txt(0, 0, '7% · 20 saal', 46, { fill: BLUE }), { x: 360, y: 225 }) +
+  `<g transform="translate(0,950)">${chart(81.8)}</g>` +
+  character({ x: 620, y: 1230, s: .38, pose: [[81.54, 'pointL']], expr: [[81.54, 'happy']] }));
+
+// 14. Difference
+scene(88.24, 94.58,
+  A(88.3, 'up', txt(0, 0, 'Farak:', 60, { fill: '#666' }), { x: 360, y: 180 }) +
+  A(88.6, 'count', txt(0, 0, '$16,700', 130, { fill: RED, extra: 'data-n="16700" data-pre="$"' }), { x: 360, y: 320 }) +
+  A(90.9, 'pop', `${check(30)}${txt(50, 14, 'Dabba sahi tha', 48, { anchor: 'start' })}`, { x: 110, y: 480 }) +
+  A(92.4, 'pop', `<g transform="scale(.45)">${bigX(60)}</g>${txt(50, 14, 'Andar ka saaman galat', 48, { anchor: 'start' })}`, { x: 90, y: 580 }) +
+  A(89.0, 'pop', coins(6), { x: 560, y: 1150 }) + A(89.3, 'pop', coins(4), { x: 640, y: 1170 }) +
+  character({ x: 300, y: 1200, s: .68, pose: [[88.24, 'hips'], [92.2, 'shrug']], expr: [[88.24, 'shock'], [90.8, 'worry']] }));
+
+// 15. What to do — checklist
+const steps = [['Room check karo', 95.9], ['TFSA kholo', 97.8], ['Diversified, low-cost', 99.6, 'investments rakho'], ['Daily kharche ka', 102.6, 'cash yahan nahi']];
+scene(94.58, 105.5,
+  A(94.65, 'up', txt(0, 0, 'Toh karna kya hai?', 62, { fill: BLUE }), { x: 360, y: 160 }) +
+  A(94.9, 'pop', `<rect x="-300" y="-30" width="600" height="${4 * 150 + 40}" rx="18" fill="#fff" stroke="${INK}" stroke-width="5"/><rect x="-80" y="-56" width="160" height="50" rx="12" fill="#bbb" stroke="${INK}" stroke-width="5"/>`, { x: 360, y: 260 }) +
+  steps.map(([a, t, b], i) => A(t, 'up', `<rect x="-22" y="-22" width="44" height="44" rx="8" fill="#fff" stroke="${INK}" stroke-width="4.5"/>${A(t + .5, 'draw', check(20, i === 3 ? RED : GREEN))}${txt(44, b ? -2 : 14, a, 42, { anchor: 'start' })}${b ? txt(44, 44, b, 42, { anchor: 'start' }) : ''}`, { x: 110, y: 320 + i * 150 })).join('') +
+  A(102.6, 'pop', `<g transform="scale(.3)">${bigX(60)}</g>`, { x: 110, y: 770 }) +
+  character({ x: 600, y: 1230, s: .42, pose: [[94.58, 'pointL']], expr: [[94.58, 'smile']] }));
+
+// 16. Disclaimer + next video
+scene(105.5, 110.84,
+  A(105.55, 'up', txt(0, 0, 'Yeh education hai,', 52), { x: 360, y: 160 }) +
+  A(106.4, 'up', txt(0, 0, 'financial advice nahi', 52, { fill: '#666' }), { x: 360, y: 225 }) +
+  A(107.4, 'pop', pill('NEXT VIDEO', BLUE, '#fff', 40), { x: 360, y: 350 }) +
+  A(107.9, 'pop', doc('PAYCHECK'), { x: 470, y: 620 }) +
+  A(109.0, 'up', txt(0, 0, 'Tax kahan se', 46, { anchor: 'start' }), { x: 330, y: 860 }) +
+  A(109.4, 'up', txt(0, 0, 'katta hai?', 46, { anchor: 'start', fill: RED }), { x: 330, y: 915 }) +
+  character({ x: 180, y: 1200, s: .58, pose: [[105.5, 'idle'], [107.6, 'point']], expr: [[105.5, 'smile']] }));
+
+// 17. Follow
+scene(110.84, 999,
+  A(110.9, 'pop', bell(), { x: 520, y: 330, s: 1.3 }) +
+  A(111.3, 'stamp', pill('FOLLOW', RED, '#fff', 74, 46), { x: 360, y: 600 }) +
+  A(111.9, 'pop', sparks(150), { x: 360, y: 585, s: 1.6 }) +
+  character({ x: 360, y: 1200, s: .72, pose: [[110.84, 'thumbs']], expr: [[110.84, 'happy']] }));
+
+// ---------- build ----------
+const root = document.getElementById('root');
+root.innerHTML = SC.map((c, i) => `<g class="scene" id="s${i}" data-s="${c.s}" data-e="${c.e}" style="display:none"><g class="cam">${c.body}</g></g>`).join('');
+const scenes = [...document.querySelectorAll('.scene')].map(el => ({ el, s: +el.dataset.s, e: +el.dataset.e, cam: el.firstChild, ans: [...el.querySelectorAll('.an')], chars: [...el.querySelectorAll('.char')] }));
+for (const el of document.querySelectorAll('.an')) {
+  if (el.dataset.a === 'draw') el.querySelectorAll('[pathLength]').forEach(p => p.setAttribute('stroke-dasharray', '1 1'));
+  if (el.dataset.a === 'count') { const t = el.querySelector('text[data-n]'); el._t = t; }
+}
+
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const eOut = p => 1 - Math.pow(1 - p, 3);
+const eBack = p => { const c = 1.9; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const eBounce = p => { const n = 7.5625, d = 2.75; if (p < 1 / d) return n * p * p; if (p < 2 / d) return n * (p -= 1.5 / d) * p + .75; if (p < 2.5 / d) return n * (p -= 2.25 / d) * p + .9375; return n * (p -= 2.625 / d) * p + .984375; };
+const DUR = { pop: .45, up: .45, fade: .4, draw: .55, drop: .75, grow: 1.2, fly: 2, count: 1.4, stamp: .32 };
+const fmt = n => n.toLocaleString('en-US');
+
+function animEl(el, t) {
+  const a = el.dataset.a, tin = +el.dataset.in, dur = +(el.dataset.dur || DUR[a]);
+  const p = clamp((t - tin) / dur);
+  const st = el.style;
+  if (t < tin) { st.opacity = 0; return; }
+  st.opacity = 1;
+  switch (a) {
+    case 'pop': st.transform = `scale(${eBack(p)})`; st.opacity = clamp(p * 4); break;
+    case 'up': st.transform = `translateY(${(1 - eOut(p)) * 40}px)`; st.opacity = clamp(p * 2); break;
+    case 'fade': st.opacity = p; break;
+    case 'stamp': st.transform = `scale(${2.2 - 1.2 * eOut(p)})`; st.opacity = clamp(p * 3); break;
+    case 'drop': st.transform = `translateY(${-(1 - eBounce(p)) * 500}px)`; break;
+    case 'grow': st.transformOrigin = 'bottom'; st.transform = `scaleY(${Math.max(.001, eOut(p))})`; break;
+    case 'fly': { const q = clamp((t - tin - .3) / dur); const pp = clamp((t - tin) / .3);
+      st.transform = `translate(${+el.dataset.dx * eOut(q) * 1.6}px,${+el.dataset.dy * eOut(q) * 1.6}px) rotate(${q * 50}deg) scale(${eBack(pp)})`; st.opacity = 1 - clamp((q - .55) / .45); break; }
+    case 'count': { st.transform = `scale(${eBack(clamp(p * 3))})`; const n = +el._t.dataset.n; el._t.textContent = (el._t.dataset.pre || '') + fmt(Math.round(n * eOut(p) / (n >= 1000 ? 100 : 1)) * (n >= 1000 ? 100 : 1)); break; }
+    case 'draw': el.querySelectorAll(':scope > g > [pathLength]').forEach(pth => pth.setAttribute('stroke-dashoffset', 1 - eOut(p))); break;
+  }
+}
+
+function lookup(tl, t) { let cur = tl[0], prev = tl[0]; for (const k of tl) { if (t >= k[0]) { prev = cur; cur = k; } } return { cur, prev }; }
+function armPath(sx, sy, a1, a2, side, L1 = 88, L2 = 84) {
+  const r = d => d * Math.PI / 180;
+  const ex = sx + side * Math.sin(r(a1)) * L1, ey = sy + Math.cos(r(a1)) * L1;
+  const hx = ex + side * Math.sin(r(a2)) * L2, hy = ey + Math.cos(r(a2)) * L2;
+  return { d: `M${sx},${sy} Q${(sx + ex) / 2 + side * 4},${(sy + ey) / 2} ${ex},${ey} L${hx},${hy}`, hx, hy, a2 };
+}
+function drawChar(c, t, amp) {
+  const d = c.dataset;
+  const poseTL = JSON.parse(d.pose), exprTL = JSON.parse(d.expr);
+  const { cur, prev } = lookup(poseTL, t);
+  const k = cur === prev ? 1 : eOut(clamp((t - cur[0]) / .3));
+  const P = POSES[cur[1]], Q = POSES[prev[1]];
+  const bob = Math.sin(t * 2.4) * 3 + amp * 3;
+  c.setAttribute('transform', `translate(${d.x},${+d.y}) scale(${d.s * d.flip},${d.s})`);
+  c.querySelector('.body').setAttribute('transform', `translate(0,${-bob})`);
+  let arms = '';
+  for (const [side, key, sx] of [[1, 'R', 46], [-1, 'L', -46]]) {
+    const wob = (key === 'R' ? Math.sin(t * 3.1) : Math.sin(t * 2.7 + 1)) * 4 * (1 + amp);
+    const a1 = Q[key][0] + (P[key][0] - Q[key][0]) * k + wob, a2 = Q[key][1] + (P[key][1] - Q[key][1]) * k + wob;
+    const ap = armPath(sx, -372 - bob, a1, a2, side);
+    arms += `<path d="${ap.d}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const pn = cur[1];
+    const fx = ap.hx + side * Math.sin(ap.a2 * Math.PI / 180) * 18, fy = ap.hy + Math.cos(ap.a2 * Math.PI / 180) * 18;
+    if (key === 'R' && (pn === 'point' || pn === 'pointUp') || key === 'L' && pn === 'pointL')
+      arms += `<path d="M${ap.hx},${ap.hy} L${fx},${fy}" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>`;
+    if (key === 'R' && pn === 'thumbs')
+      arms += `<path d="M${ap.hx},${ap.hy} L${ap.hx},${ap.hy - 26}" stroke="${INK}" stroke-width="9" stroke-linecap="round"/>`;
+    arms += `<circle cx="${ap.hx}" cy="${ap.hy}" r="13" fill="${INK}"/>`;
+  }
+  c.querySelector('.arms').innerHTML = arms;
+  const ex = lookup(exprTL, t).cur[1];
+  const blink = (t % 3.4) < .12 ? .12 : 1;
+  const eyeY = -10, ery = (ex === 'shock' ? 13 : 10) * blink;
+  c.querySelector('.eyes').innerHTML = ex === 'happy' && blink === 1
+    ? `<path d="M-38,${eyeY + 4} q10,-14 20,0 M18,${eyeY + 4} q10,-14 20,0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<ellipse cx="-28" cy="${eyeY}" rx="${ex === 'shock' ? 8 : 6.5}" ry="${ery}" fill="${INK}"/><ellipse cx="28" cy="${eyeY}" rx="${ex === 'shock' ? 8 : 6.5}" ry="${ery}" fill="${INK}"/>`;
+  const browY = ex === 'shock' ? -46 : -36;
+  c.querySelector('.brows').innerHTML =
+    ex === 'worry' ? `<path d="M-44,-30 L-16,-40 M16,-40 L44,-30" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>`
+    : ex === 'think' ? `<path d="M-42,-36 q12,-10 26,-4 M16,-46 q14,-8 28,2" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<path d="M-42,${browY} q13,-10 26,-2 M16,${browY - 2} q13,-8 26,2" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const my = 36; let m;
+  if (ex === 'shock') m = `<ellipse cx="0" cy="${my + 2}" rx="${10 + amp * 5}" ry="${12 + amp * 9}" fill="${INK}"/>`;
+  else if (amp < .1) m = ex === 'worry' ? `<path d="M-18,${my + 6} q18,-10 36,0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : ex === 'think' ? `<path d="M-14,${my + 2} L16,${my - 2}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>`
+    : `<path d="M-26,${my - 4} Q0,${my + 18} 26,${my - 4}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  else { const o = 6 + amp * 20, w = ex === 'worry' || ex === 'think' ? 16 : 26;
+    m = `<path d="M${-w},${my - 4} Q0,${my - 4 + o * 2} ${w},${my - 4} Q0,${my} ${-w},${my - 4} Z" fill="#2b2b2b" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>${w > 20 ? `<path d="M${-w + 6},${my - 3} Q0,${my + 2} ${w - 6},${my - 3}" stroke="#fff" stroke-width="4" fill="none"/>` : ''}`; }
+  c.querySelector('.mouth').innerHTML = m;
+}
+
+window.render = function (t) {
+  const amp = AMP[Math.min(AMP.length - 1, Math.floor(t * 24))] || 0;
+  const filt = 'url(#r' + (Math.floor(t * 8) % 3) + ')';
+  for (const sc of scenes) {
+    const on = t >= sc.s - 0.001 && t < sc.e;
+    sc.el.style.display = on ? '' : 'none';
+    if (!on) continue;
+    const lt = t - sc.s;
+    sc.el.style.opacity = clamp(lt / .18);
+    sc.cam.style.transform = `scale(${1 + .035 * clamp(lt / Math.min(10, sc.e - sc.s))})`;
+    sc.el.setAttribute('filter', filt);
+    for (const el of sc.ans) animEl(el, t);
+    for (const c of sc.chars) drawChar(c, t, amp);
+  }
+};
+render(0);
+</script></body></html>
