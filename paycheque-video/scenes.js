@@ -1,31 +1,20 @@
-// ---------- scenes ----------
-const SC = [];
-const scene = (s, e, body) => SC.push({ s, e, body });
-const HL = (tin, x, y, w, h = 44) => A(tin, 'mark', `<rect x="0" y="${-h / 2}" width="${w}" height="${h}" rx="9" fill="#ffe066" opacity=".9"/>`, { x: x - w / 2, y, sfx: 'marker' });
-const DG = '#04452f';
-// --- props ---
-const offer = () => `<g transform="rotate(-4)"><rect x="-150" y="-190" width="300" height="380" rx="8" fill="#fff" stroke="${INK}" stroke-width="5"/>${txt(0, -140, 'OFFER LETTER', 34, { fill: BLUE })}
-  <path d="M-110,-105 H110 M-110,-80 H80 M-110,-55 H100" stroke="#999" stroke-width="4"/>${txt(-110, 0, 'Salary:', 36, { anchor: 'start' })}${txt(0, 75, '$60,000', 70, { fill: GREEN })}
-  <path d="M-100,150 q20,-30 40,0 t40,0 t30,-10" stroke="${BLUE}" stroke-width="4" fill="none"/>${txt(90, 158, '✓', 40, { fill: GREEN })}</g>`;
-const phone = (line1, amt, c = RED) => `<rect x="-110" y="-200" width="220" height="400" rx="30" fill="#2b2b2b" stroke="${INK}" stroke-width="5"/><rect x="-96" y="-170" width="192" height="340" rx="12" fill="#f2f7fb"/>
-  <rect x="-96" y="-170" width="192" height="60" rx="12" fill="${DG}"/>${txt(0, -130, 'MY BANK', 28, { fill: '#fff' })}${txt(0, -50, line1, 28, { fill: '#555', w: 400 })}${txt(0, 20, amt, 52, { fill: c })}
-  <rect x="-70" y="80" width="140" height="10" rx="5" fill="#ddd"/><rect x="-70" y="105" width="100" height="10" rx="5" fill="#ddd"/><circle cy="182" r="9" fill="#555"/>`;
-const heart = (r = 1) => `<g transform="scale(${r})"><path d="M0,30 L-8,10 L6,-6 L-4,-26 C-20,-50 -70,-40 -66,-6 C-62,24 -20,50 0,70 Z" fill="${RED}" stroke="${INK}" stroke-width="4" transform="translate(-12,0) rotate(-10)"/><path d="M0,30 L-8,10 L6,-6 L-4,-26 C14,-50 70,-40 66,-6 C62,24 20,50 0,70 Z" fill="${RED}" stroke="${INK}" stroke-width="4" transform="translate(12,0) rotate(10)"/></g>`;
-const stub = (w = 300, h = 360) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="8" fill="#fff" stroke="${INK}" stroke-width="5"/><rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="56" rx="8" fill="${BLUE}" stroke="${INK}" stroke-width="5"/>${txt(0, -h / 2 + 40, 'PAYCHEQUE', 34, { fill: '#fff' })}
-  ${['Gross pay', 'Fed. tax', 'Prov. tax', 'CPP', 'EI', 'NET'].map((l, i) => `${txt(-w / 2 + 22, -h / 2 + 100 + i * 44, l, 28, { anchor: 'start', w: i === 0 || i === 5 ? 700 : 400, fill: i === 5 ? GREEN : INK })}<path d="M${w / 2 - 90},${-h / 2 + 92 + i * 44} H${w / 2 - 24}" stroke="#bbb" stroke-width="6" stroke-linecap="round"/>`).join('')}`;
-const shield = () => `<path d="M0,-80 L66,-56 Q66,40 0,84 Q-66,40 -66,-56 Z" fill="${BLUE}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>${check(30, '#fff')}`;
-const umbrella = () => `<path d="M-150,0 Q-150,-120 0,-125 Q150,-120 150,0 Q125,-22 100,0 Q75,-22 50,0 Q25,-22 0,0 Q-25,-22 -50,0 Q-75,-22 -100,0 Q-125,-22 -150,0Z" fill="${RED}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M-50,0 Q-30,-110 0,-125 Q30,-110 50,0" fill="none" stroke="${INK}" stroke-width="3"/><path d="M0,-125 V110 q0,22 -20,22 q-18,0 -18,-18" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
-const rain = (x0, x1, y0, y1) => { let s = ''; for (let i = 0; i < 22; i++) { const x = x0 + (i * 53 % (x1 - x0)), y = y0 + (i * 97 % (y1 - y0)); s += `<path d="M${x},${y} l-6,22" stroke="#7cb8e8" stroke-width="4" stroke-linecap="round"/>`; } return s; };
-const magnifier = () => `<circle r="60" fill="#dff1ff" fill-opacity=".6" stroke="${INK}" stroke-width="7"/><path d="M42,42 L100,100" stroke="${INK}" stroke-width="16" stroke-linecap="round"/><path d="M-30,-30 q15,-12 30,-10" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/>`;
-const bank = () => `<path d="M-90,-40 L0,-95 L90,-40 Z" fill="#e9e9e9" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>${txt(0, -50, '$', 34, { fill: DG })}${[-60, -20, 20, 60].map(x => `<rect x="${x - 9}" y="-36" width="18" height="70" fill="#fff" stroke="${INK}" stroke-width="4"/>`).join('')}<rect x="-100" y="34" width="200" height="18" fill="#e9e9e9" stroke="${INK}" stroke-width="5"/>`;
-const tag = (s, c) => `<rect x="-44" y="-30" width="88" height="60" rx="10" fill="${c}" stroke="${INK}" stroke-width="4"/>${txt(0, 12, s, 32, { fill: '#fff' })}`;
-const row = (tin, i, label, amt, col = INK, y0 = 360) => A(tin, 'up', `${txt(0, 0, label, 40, { anchor: 'start', fill: col === RED ? INK : col })}${txt(470, 0, amt, 44, { anchor: 'end', fill: col })}`, { x: 120, y: y0 + i * 84 });
-const months = (tin) => 'JFMAMJJASOND'.split('').map((m, i) => { const h = i >= 10 ? 210 : i >= 9 ? 170 : 130; return A(tin + i * .07, 'grow', `<rect x="${-18}" y="${-h}" width="36" height="${h}" fill="${i >= 10 ? 'url(#hatchB)' : 'url(#hatchG)'}" stroke="${INK}" stroke-width="3.5"/>`, { x: 105 + i * 47, y: 860, dur: .6 }) + txt(105 + i * 47, 900, m, 28); }).join('');
-
+// Paycheque video: CFG + scenes. Times are seconds in the voiceover.
+const CFG = {
+  voiceEnd: 121.37,          // voiceover length (s)
+  endScene: 120.57,          // when the Follow/logo scene starts
+  tail: 1.9,                 // hold after the voice ends so the logo is readable
+  whoosh: [11.49, 20.56, 45.55, 64.97, 79.18, 96.27],   // ONLY major section changes (4–6)
+  checks: [                  // every on-screen number that is derived from others
+    { label: 'gross per paycheque', expr: '60000 / 26', expect: 2308, tol: 1 },
+    { label: 'net pay', expr: '2308 - 205 - 140 - 139 - 38', expect: 1786 },
+    { label: 'CPP per paycheque (5.95% after $3,500/yr exemption)', expr: '(2308 - 3500 / 26) * 0.0595', expect: 139, tol: 2, warn: true },  // recorded audio says 139; real value ≈ 129
+    { label: 'EI amount', expr: '2308 * 0.0163', expect: 38, tol: 1 },
+  ],
+};
 // 1. Offer letter $60k
 scene(0, 2.34,
   A(0.1, 'pop', offer(), { x: 470, y: 520, sfx: 'pop' }) +
-  A(1.0, 'pop', sparks(110), { x: 470, y: 595, s: 1.2, sfx: 'cash' }) +
+  A(1.0, 'pop', '', { sfx: 'cash' }) +
   A(0.2, 'up', txt(0, 0, 'Ruko!', 80, { fill: RED }), { x: 200, y: 200 }) +
   character({ x: 190, y: 1180, s: .7, pose: [[0, 'point']], expr: [[0, 'excited'], [1.0, 'money']], act: [[0.05, 'hop', .45], [1.1, 'hop', .45]], look: [[0, 'ur']] }));
 // 2. Bank has less money -> heartbreak
@@ -111,8 +100,8 @@ scene(64.97, 79.18,
   A(67.35, 'up', txt(0, 0, 'EI = Employment Insurance', 50, { fill: BLUE }), { x: 360, y: 265 }) +
   A(68.9, 'rain', rain(40, 700, 380, 1100), { dur: 99 }) +
   A(69.2, 'drop', umbrella(), { x: 200, y: 790 }) +
-  A(69.5, 'up', txt(0, 0, 'Naukri gayi?', 46, { anchor: 'start' }), { x: 380, y: 430 }) +
-  A(70.3, 'up', txt(0, 0, 'Yeh bachayega!', 46, { anchor: 'start', fill: GREEN }), { x: 380, y: 490 }) +
+  A(69.5, 'up', txt(0, 0, 'Naukri gayi?', 46, { anchor: 'start' }), { x: 360, y: 430 }) +
+  A(70.3, 'up', txt(0, 0, 'Yeh bachayega!', 46, { anchor: 'start', fill: GREEN }), { x: 360, y: 490 }) +
   A(71.8, 'pop', pill('Rate: sirf 1.63%', BLUE, '#fff', 40), { x: 490, y: 610 }) +
   A(74.2, 'up', txt(0, 0, 'Employer deta hai', 44, { anchor: 'start' }), { x: 340, y: 740 }) +
   A(75.0, 'stamp', txt(0, 0, '1.4× zyada', 70, { fill: GREEN, anchor: 'start' }), { x: 340, y: 830 }) +
@@ -130,10 +119,10 @@ scene(79.18, 96.27,
   row(90.0, 4, 'EI', '−$38', RED) +
   A(91.2, 'draw', line(120, 0, 600, 0, INK, 5), { y: 760 }) +
   A(92.1, 'count', txt(0, 0, 'NET  $1,786', 80, { fill: GREEN, extra: 'data-n="1786" data-pre="NET  $"' }), { x: 360, y: 840 }) +
-  A(86.6, 'up', txt(0, 0, '*average, province pe depend', 26, { fill: '#888', w: 400, anchor: 'start' }), { x: 120, y: 905 }) +
-  A(93.8, 'pop', bank(), { x: 140, y: 1040, s: .9 }) +
-  A(94.2, 'up', txt(0, 0, 'Yahi bank mein aata hai', 38, { anchor: 'start' }), { x: 235, y: 1060 }) +
-  character({ x: 620, y: 1240, s: .36, pose: [[79.18, 'pointUp'], [83.4, 'pointL'], [92.1, 'cheer'], [93.8, 'thumbs']], expr: [[79.18, 'excited'], [83.4, 'worry'], [92.1, 'money'], [93.8, 'wink']], act: [[81.5, 'hop', .45], [83.5, 'nod', .5], [88.5, 'nod', .5], [92.2, 'jump', .6]], look: [[79.18, 'ul']] }));
+  A(86.6, 'up', txt(0, 0, '*average, province pe depend', 26, { fill: '#888', w: 400, anchor: 'start' }), { x: 120, y: 940 }) +
+  A(93.8, 'pop', bank(), { x: 120, y: 1050, s: .8 }) +
+  A(94.2, 'up', txt(0, 0, 'Yahi bank mein aata hai', 34, { anchor: 'start' }), { x: 210, y: 1065 }) +
+  character({ x: 650, y: 1240, s: .36, pose: [[79.18, 'pointUp'], [83.4, 'pointL'], [92.1, 'cheer'], [93.8, 'thumbs']], expr: [[79.18, 'excited'], [83.4, 'worry'], [92.1, 'money'], [93.8, 'wink']], act: [[81.5, 'hop', .45], [83.5, 'nod', .5], [88.5, 'nod', .5], [92.2, 'jump', .6]], look: [[79.18, 'ul']] }));
 // 12. Secret 1: estimate, April, refund/bill
 scene(96.27, 108.16,
   A(96.3, 'up', txt(0, 0, 'Jaane se pehle...', 50, { fill: '#666' }), { x: 360, y: 150 }) +
@@ -163,7 +152,7 @@ scene(117.09, 120.57,
   A(117.7, 'up', txt(0, 0, 'Har line padho!', 70, { fill: BLUE }), { x: 360, y: 262 }) +
   A(117.5, 'pop', stub(), { x: 450, y: 600 }) +
   A(118.2, 'slide', magnifier(), { x: 420, y: 560, attr: 'data-dx="80" data-dy="160"', dur: 2.2 }) +
-  A(119.2, 'stamp', stamp('Paisa wahin hai!', GREEN, 44, -4), { x: 400, y: 900 }) +
+  A(119.2, 'stamp', stamp('Paisa wahin hai!', GREEN, 44, -4), { x: 450, y: 930 }) +
   character({ x: 150, y: 1200, s: .55, pose: [[117.09, 'point'], [119.2, 'thumbs']], expr: [[117.09, 'smile'], [119.2, 'wink']], act: [[117.1, 'nod', .6], [119.3, 'hop', .45]], look: [[117.09, 'ur']] }));
 // 15. Follow + logo
 scene(120.57, 999,

@@ -1,0 +1,9 @@
+projects/*/still_*.png
+projects/*/*.wav
+projects/*/amp.json
+projects/*/cfg.json
+projects/*/cues.json
+projects/*/stills.json
+projects/*/engine.html
+projects/*/logo.png
+projects/*/*.woff2
