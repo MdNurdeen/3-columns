@@ -6,7 +6,7 @@
 html,body{margin:0;background:#fcfcfa;overflow:hidden}
 svg{display:block;width:100vw;height:100vh}
 text{font-family:K;}
-.an,.scene,.cam{transform-box:fill-box;transform-origin:center}
+.an,.cam{transform-box:fill-box;transform-origin:center}
 .cam{transform-box:view-box;transform-origin:360px 700px}
 </style></head><body>
 <svg id="v" viewBox="0 0 720 1280" xmlns="http://www.w3.org/2000/svg">
@@ -14,12 +14,18 @@ text{font-family:K;}
  <filter id="r0"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="1"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
  <filter id="r1"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
  <filter id="r2"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="13"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter>
+ <filter id="mb" x="-20%" y="0" width="140%" height="100%"><feGaussianBlur stdDeviation="14 0"/></filter>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .5 0"/></filter>
+ <radialGradient id="vig" cx="50%" cy="45%" r="75%"><stop offset="60%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".07"/></radialGradient>
  <pattern id="hatchB" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#3d8bd4"/><line x1="0" y1="0" x2="0" y2="8" stroke="#2f72b5" stroke-width="3"/></pattern>
  <pattern id="hatchR" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#e5483f"/><line x1="0" y1="0" x2="0" y2="8" stroke="#c4352d" stroke-width="3"/></pattern>
  <pattern id="hatchG" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#b9b9b9"/><line x1="0" y1="0" x2="0" y2="8" stroke="#a2a2a2" stroke-width="3"/></pattern>
 </defs>
 <rect width="720" height="1280" fill="#fcfcfa"/>
 <g id="root"></g>
+<rect width="720" height="1280" filter="url(#grain)" opacity=".05" pointer-events="none"/>
+<rect width="720" height="1280" fill="url(#vig)"/>
+<rect x="0" y="0" width="720" height="7" fill="#e9e9e4"/><rect id="prog" x="0" y="0" width="0" height="7" fill="#3d8bd4"/>
 </svg>
 <script>
 const AMP = window.AMP || [];
@@ -29,7 +35,7 @@ const INK = '#1b1b1b', BLUE = '#3d8bd4', RED = '#e0443b', GREEN = '#3fae49';
 const txt = (x, y, s, size = 46, o = {}) =>
   `<text x="${x}" y="${y}" font-size="${size}" font-weight="${o.w || 700}" fill="${o.fill || INK}" text-anchor="${o.anchor || 'middle'}" ${o.extra || ''}>${s}</text>`;
 const A = (tin, anim, body, o = {}) =>
-  `<g class="an" data-in="${tin}" data-a="${anim}" ${o.dur ? `data-dur="${o.dur}"` : ''} ${o.out ? `data-out="${o.out}"` : ''} ${o.attr || ''}><g transform="translate(${o.x || 0},${o.y || 0}) scale(${o.s || 1})">${body}</g></g>`;
+  `<g class="an" data-in="${tin}" data-a="${anim}" ${o.sfx ? `data-sfx="${o.sfx}"` : ''} ${o.dur ? `data-dur="${o.dur}"` : ''} ${o.out ? `data-out="${o.out}"` : ''} ${o.attr || ''}><g transform="translate(${o.x || 0},${o.y || 0}) scale(${o.s || 1})">${body}</g></g>`;
 const line = (x1, y1, x2, y2, c = INK, w = 5) => `<path d="M${x1},${y1} L${x2},${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" fill="none" pathLength="1"/>`;
 const bigX = (r = 60) => `<circle r="${r * 1.25}" fill="#fff" stroke="${RED}" stroke-width="7" pathLength="1"/>${line(-r * .6, -r * .6, r * .6, r * .6, RED, 14)}${line(r * .6, -r * .6, -r * .6, r * .6, RED, 14)}`;
 const check = (r = 50, c = GREEN) => `<path d="M${-r},0 L${-r * .3},${r * .7} L${r},${-r * .8}" stroke="${c}" stroke-width="${r * .28}" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="1"/>`;
@@ -107,6 +113,7 @@ const character = (o) => {
 };
 
 // ---------- scenes ----------
+const HL = (tin, x, y, w, h = 44) => A(tin, 'mark', `<rect x="0" y="${-h / 2}" width="${w}" height="${h}" rx="9" fill="#ffe066" opacity=".9"/>`, { x: x - w / 2, y, sfx: 'marker' });
 const SC = [];
 const scene = (s, e, body) => SC.push({ s, e, body });
 const HEAD = (y, s, size = 60, tin = 0, o = {}) => A(tin, 'up', txt(0, 0, s, size, o), { x: 360, y });
@@ -114,7 +121,7 @@ const HEAD = (y, s, size = 60, tin = 0, o = {}) => A(tin, 'up', txt(0, 0, s, siz
 // 1. Hook
 scene(0, 3.18,
   A(0.15, 'pop', bubble(470, 190, txt(0, -12, 'TFSA =', 66) + txt(0, 56, 'Savings Account?', 50, { fill: BLUE })), { x: 380, y: 330 }) +
-  A(1.6, 'pop', txt(0, 0, '?', 110, { fill: RED }), { x: 600, y: 200 }) +
+  A(1.6, 'pop', txt(0, 0, '?', 110, { fill: RED }), { x: 600, y: 200, sfx: 'boing' }) +
   A(2.0, 'pop', txt(0, 0, '?', 80, { fill: RED }), { x: 140, y: 230 }) +
   character({ x: 300, y: 1170, s: .95, pose: [[0, 'think']], expr: [[0, 'think']] }));
 
@@ -124,14 +131,14 @@ scene(3.18, 8.82,
   A(3.9, 'up', txt(0, 0, 'Savings Account', 64), { x: 360, y: 250 }) +
   A(4.6, 'pop', piggy(), { x: 470, y: 560, s: 1.1 }) +
   A(6.2, 'pop', pill('No tax', GREEN, '#fff', 40), { x: 470, y: 720 }) +
-  A(7.55, 'stamp', bigX(80), { x: 470, y: 560 }) +
+  A(7.55, 'stamp', bigX(80), { x: 470, y: 560, sfx: 'wrong' }) +
   A(7.6, 'stamp', stamp('GALAT!', RED, 64), { x: 470, y: 820 }) +
   character({ x: 190, y: 1180, s: .72, pose: [[3.18, 'point'], [7.4, 'shrug']], expr: [[3.18, 'smile'], [7.5, 'shock']] }));
 
 // 3. Thousands lost
 scene(8.82, 11.40,
   A(8.9, 'up', txt(0, 0, 'Yeh galti =', 58), { x: 360, y: 170 }) +
-  A(9.4, 'stamp', txt(0, 0, '−$1,000s', 100, { fill: RED }), { x: 360, y: 290 }) +
+  A(9.4, 'stamp', txt(0, 0, '−$1,000s', 100, { fill: RED }), { x: 360, y: 290, sfx: 'stamp+lose' }) +
   [[-170, 520, -40, -260], [150, 560, 60, -300], [-60, 640, -110, -330], [210, 700, 130, -260], [40, 470, 20, -320]].map(([x, y, dx, dy], i) =>
     A(9.0 + i * .18, 'fly', `<g transform="rotate(${i * 23 - 30})">${bill()}</g>`, { x: 360 + x * .9, y, attr: `data-dx="${dx}" data-dy="${dy}"`, dur: 2.2 })).join('') +
   character({ x: 360, y: 1180, s: .82, pose: [[8.82, 'shrug']], expr: [[8.82, 'shock']] }));
@@ -140,7 +147,7 @@ scene(8.82, 11.40,
 scene(11.40, 14.38,
   A(11.45, 'up', txt(0, 0, 'Sach yeh hai...', 56, { fill: '#666' }), { x: 360, y: 180 }) +
   A(12.0, 'pop', txt(0, 0, 'TFSA', 120, { fill: BLUE }), { x: 360, y: 360 }) +
-  A(12.6, 'stamp', txt(0, 0, '≠', 120, { fill: RED }), { x: 360, y: 480 }) +
+  A(12.6, 'stamp', txt(0, 0, '≠', 120, { fill: RED }), { x: 360, y: 480, sfx: 'wrong' }) +
   A(12.9, 'up', txt(0, 0, 'Savings Account', 66), { x: 360, y: 600 }) +
   A(13.1, 'draw', line(150, 0, 570, 0, RED, 9), { y: 582 }) +
   character({ x: 360, y: 1190, s: .78, pose: [[11.4, 'pointUp']], expr: [[11.4, 'smile']] }));
@@ -148,6 +155,7 @@ scene(11.40, 14.38,
 // 5. It's a container
 const items = [['Cash', iconCash, 16.6], ['GIC', iconGIC, 18.9], ['Stocks', iconStock, 19.9], ['ETF', iconETF, 21.0]];
 scene(14.38, 22.78,
+  HL(14.9, 360, 150, 520, 50) +
   A(14.45, 'up', txt(0, 0, 'TFSA = ek DABBA', 64), { x: 360, y: 160 }) +
   A(15.4, 'up', txt(0, 0, '(a container)', 40, { fill: '#666', w: 400 }), { x: 360, y: 215 }) +
   A(14.9, 'pop', box('TFSA'), { x: 440, y: 1130 }) +
@@ -161,9 +169,9 @@ scene(22.78, 32.38,
   A(22.85, 'up', txt(0, 0, 'Dabbe ke andar growth', 54), { x: 360, y: 160 }) +
   A(22.9, 'pop', box('TFSA', 300, 190, `<g transform="translate(20,-205)">${coins(3)}</g><g transform="translate(-60,-200) rotate(-12) scale(.6)">${bill()}</g><g transform="translate(90,-200) rotate(10) scale(.6)">${bill()}</g>`), { x: 440, y: 1130 }) +
   gains.map(([l, t], i) => A(t, 'up', `${arrowUp(60)}${txt(30, -20, l, 44, { anchor: 'start' })}`, { x: 200, y: 340 + i * 95 })).join('') +
-  A(28.2, 'stamp', stamp('TAX = $0', GREEN, 66, -6), { x: 360, y: 680 }) +
+  A(28.2, 'stamp', stamp('TAX = $0', GREEN, 66, -6), { x: 360, y: 680, sfx: 'stamp+ding' }) +
   A(29.6, 'up', `${arrowR(110, INK)}${txt(130, 14, 'Nikalo → No tax', 42, { anchor: 'start' })}`, { x: 120, y: 790 }) +
-  A(30.4, 'pop', check(34), { x: 640, y: 780 }) +
+  A(30.4, 'pop', check(34), { x: 640, y: 780, sfx: 'ding' }) +
   character({ x: 130, y: 1190, s: .6, pose: [[22.78, 'present'], [28.0, 'thumbs']], expr: [[22.78, 'smile']] }));
 
 // 7. Limit
@@ -171,7 +179,7 @@ scene(32.38, 34.80,
   A(32.45, 'up', txt(0, 0, 'Lekin...', 66, { fill: '#666' }), { x: 360, y: 170 }) +
   A(32.9, 'stamp', stamp('LIMIT', RED, 90, -5), { x: 360, y: 330 }) +
   A(32.6, 'pop', box('TFSA'), { x: 440, y: 1000 }) +
-  A(33.4, 'pop', warn(1), { x: 450, y: 660 }) +
+  A(33.4, 'pop', warn(1), { x: 450, y: 660, sfx: 'alert' }) +
   character({ x: 130, y: 1190, s: .6, pose: [[32.38, 'shrug']], expr: [[32.38, 'worry']] }));
 
 // 8. 2026 room $7000, carry forward
@@ -180,6 +188,7 @@ scene(34.80, 41.50,
   A(35.6, 'up', txt(0, 0, 'sirf', 44, { fill: '#666', w: 400 }), { x: 500, y: 250 }) +
   A(35.9, 'count', txt(0, 0, '$7,000', 92, { fill: GREEN, extra: 'data-n="7000" data-pre="$"' }), { x: 510, y: 345 }) +
   A(38.3, 'up', txt(0, 0, 'Unused room?', 50), { x: 360, y: 520 }) +
+  HL(39.2, 360, 567, 560, 44) +
   A(38.9, 'up', txt(0, 0, 'Carry forward ho jata hai!', 44, { fill: BLUE }), { x: 360, y: 580 }) +
   ['2024', '2025', '2026'].map((y, i) => A(39.4 + i * .45, 'drop', `<rect x="-90" y="-36" width="180" height="72" rx="10" fill="${['#cfe3f6', '#a9cdef', '#7fb4e6'][i]}" stroke="${INK}" stroke-width="4.5"/>${txt(0, 13, y, 40)}`, { x: 500, y: 960 - i * 82 })).join('') +
   A(40.9, 'draw', `<path d="M0,0 C-60,-40 -60,-140 0,-170" stroke="${INK}" stroke-width="5" fill="none" pathLength="1"/>`, { x: 380, y: 950 }) +
@@ -191,12 +200,13 @@ scene(41.50, 49.34,
   A(42.2, 'pop', flag(), { x: 360, y: 340 }) +
   A(45.3, 'up', txt(0, 0, 'Total room up to', 48, { fill: '#666' }), { x: 360, y: 560 }) +
   A(45.8, 'count', txt(0, 0, '$109,000', 110, { fill: GREEN, extra: 'data-n="109000" data-pre="$"' }), { x: 360, y: 690 }) +
-  A(47.6, 'pop', sparks(150), { x: 360, y: 655, s: 1.5 }) +
+  A(47.6, 'pop', sparks(150), { x: 360, y: 655, s: 1.5, sfx: 'sparkle' }) +
   character({ x: 360, y: 1200, s: .62, pose: [[41.5, 'pointUp'], [45.5, 'thumbs']], expr: [[41.5, 'smile'], [45.5, 'happy']] }));
 
 // 10. Newcomers + CRA My Account
 scene(49.34, 59.0,
   A(49.4, 'up', txt(0, 0, 'Newcomer ho?', 62, { fill: BLUE }), { x: 360, y: 160 }) +
+  HL(51.6, 360, 287, 260, 44) +
   A(50.6, 'up', txt(0, 0, 'Room = jis saal aaye', 48), { x: 360, y: 240 }) +
   A(51.4, 'up', txt(0, 0, 'uss saal se', 48), { x: 360, y: 300 }) +
   A(50.0, 'pop', suitcase(), { x: 120, y: 1185, s: .8 }) +
@@ -206,23 +216,24 @@ scene(49.34, 59.0,
 
 // 11. Trap: withdraw, re-contribute same year => penalty
 scene(59.0, 71.6,
-  A(59.05, 'pop', warn(.75), { x: 160, y: 170 }) +
+  A(59.05, 'pop', warn(.75), { x: 160, y: 170, sfx: 'alert' }) +
   A(59.2, 'up', txt(0, 0, 'TRAP!', 90, { fill: RED, anchor: 'start' }), { x: 230, y: 200 }) +
   A(59.9, 'pop', box('TFSA', 220, 140), { x: 160, y: 520, s: 1 }) +
   A(60.3, 'draw', arrowR(120), { x: 300, y: 430 }) +
-  A(60.6, 'pop', bill(), { x: 520, y: 430 }) +
+  A(60.6, 'pop', bill(), { x: 520, y: 430, sfx: 'cash' }) +
   A(60.7, 'up', txt(0, 0, 'Withdraw', 40), { x: 520, y: 500 }) +
   A(62.8, 'pop', calendar('JAN', '1', 'next year', 140), { x: 160, y: 760, s: .9 }) +
   A(63.5, 'up', txt(0, 0, 'Room wapas', 46, { anchor: 'start', fill: GREEN }), { x: 270, y: 740 }) +
   A(64.0, 'up', txt(0, 0, 'tab milta hai', 46, { anchor: 'start', fill: GREEN }), { x: 270, y: 795 }) +
   A(65.0, 'up', txt(0, 0, 'Usi saal wapas daala?', 44), { x: 400, y: 905 }) +
   A(66.6, 'stamp', stamp('OVER-CONTRIBUTION', RED, 40, -5), { x: 410, y: 1000 }) +
-  A(69.5, 'pop', pill('1% penalty / month', RED, '#fff', 38), { x: 430, y: 1110 }) +
+  A(69.5, 'pop', pill('1% penalty / month', RED, '#fff', 38), { x: 430, y: 1110, sfx: 'wrong' }) +
   character({ x: 115, y: 1200, s: .45, pose: [[59, 'shrug'], [66.5, 'shrug']], expr: [[59, 'worry'], [66.5, 'shock']] }));
 
 // 12. Biggest mistake: cash
 scene(71.6, 81.54,
   A(71.65, 'up', txt(0, 0, 'Sabse badi galti:', 58), { x: 360, y: 160 }) +
+  HL(73.3, 360, 232, 560, 54) +
   A(72.7, 'stamp', txt(0, 0, 'Dabba = sirf CASH', 64, { fill: RED }), { x: 360, y: 250 }) +
   A(72.9, 'pop', box('TFSA', 300, 190, [[-80, -230, -14], [10, -238, 8], [90, -228, 16], [-30, -260, -4], [60, -268, 10]].map(([x, y, r]) => `<g transform="translate(${x},${y}) rotate(${r}) scale(.7)">${bill()}</g>`).join('')), { x: 440, y: 760 }) +
   A(75.2, 'up', txt(0, 0, 'Cash ~2% · 20 saal mein', 48), { x: 400, y: 920 }) +
@@ -248,8 +259,8 @@ scene(81.54, 88.24,
 scene(88.24, 94.58,
   A(88.3, 'up', txt(0, 0, 'Farak:', 60, { fill: '#666' }), { x: 360, y: 180 }) +
   A(88.6, 'count', txt(0, 0, '$16,700', 130, { fill: RED, extra: 'data-n="16700" data-pre="$"' }), { x: 360, y: 320 }) +
-  A(90.9, 'pop', `${check(30)}${txt(50, 14, 'Dabba sahi tha', 48, { anchor: 'start' })}`, { x: 110, y: 480 }) +
-  A(92.4, 'pop', `<g transform="scale(.45)">${bigX(60)}</g>${txt(50, 14, 'Andar ka saaman galat', 48, { anchor: 'start' })}`, { x: 90, y: 580 }) +
+  A(90.9, 'pop', `${check(30)}${txt(50, 14, 'Dabba sahi tha', 48, { anchor: 'start' })}`, { x: 110, y: 480, sfx: 'ding' }) +
+  A(92.4, 'pop', `<g transform="scale(.45)">${bigX(60)}</g>${txt(50, 14, 'Andar ka saaman galat', 48, { anchor: 'start' })}`, { x: 90, y: 580, sfx: 'wrong' }) +
   A(89.0, 'pop', coins(6), { x: 560, y: 1150 }) + A(89.3, 'pop', coins(4), { x: 640, y: 1170 }) +
   character({ x: 300, y: 1200, s: .68, pose: [[88.24, 'hips'], [92.2, 'shrug']], expr: [[88.24, 'shock'], [90.8, 'worry']] }));
 
@@ -258,13 +269,14 @@ const steps = [['Room check karo', 95.9], ['TFSA kholo', 97.8], ['Diversified, l
 scene(94.58, 105.5,
   A(94.65, 'up', txt(0, 0, 'Toh karna kya hai?', 62, { fill: BLUE }), { x: 360, y: 160 }) +
   A(94.9, 'pop', `<rect x="-300" y="-30" width="600" height="${4 * 150 + 40}" rx="18" fill="#fff" stroke="${INK}" stroke-width="5"/><rect x="-80" y="-56" width="160" height="50" rx="12" fill="#bbb" stroke="${INK}" stroke-width="5"/>`, { x: 360, y: 260 }) +
-  steps.map(([a, t, b], i) => A(t, 'up', `<rect x="-22" y="-22" width="44" height="44" rx="8" fill="#fff" stroke="${INK}" stroke-width="4.5"/>${A(t + .5, 'draw', check(20, i === 3 ? RED : GREEN))}${txt(44, b ? -2 : 14, a, 42, { anchor: 'start' })}${b ? txt(44, 44, b, 42, { anchor: 'start' }) : ''}`, { x: 110, y: 320 + i * 150 })).join('') +
-  A(102.6, 'pop', `<g transform="scale(.3)">${bigX(60)}</g>`, { x: 110, y: 770 }) +
+  steps.map(([a, t, b], i) => A(t, 'up', `<rect x="-22" y="-22" width="44" height="44" rx="8" fill="#fff" stroke="${INK}" stroke-width="4.5"/>${A(t + .5, 'draw', check(20, i === 3 ? RED : GREEN), { sfx: i === 3 ? 'none' : 'ding' })}${txt(44, b ? -2 : 14, a, 42, { anchor: 'start' })}${b ? txt(44, 44, b, 42, { anchor: 'start' }) : ''}`, { x: 110, y: 320 + i * 150 })).join('') +
+  A(102.6, 'pop', `<g transform="scale(.3)">${bigX(60)}</g>`, { x: 110, y: 770, sfx: 'wrong' }) +
   character({ x: 600, y: 1230, s: .42, pose: [[94.58, 'pointL']], expr: [[94.58, 'smile']] }));
 
 // 16. Disclaimer + next video
 scene(105.5, 110.84,
   A(105.55, 'up', txt(0, 0, 'Yeh education hai,', 52), { x: 360, y: 160 }) +
+  HL(106.9, 360, 210, 500, 46) +
   A(106.4, 'up', txt(0, 0, 'financial advice nahi', 52, { fill: '#666' }), { x: 360, y: 225 }) +
   A(107.4, 'pop', pill('NEXT VIDEO', BLUE, '#fff', 40), { x: 360, y: 350 }) +
   A(107.9, 'pop', doc('PAYCHECK'), { x: 470, y: 620 }) +
@@ -274,15 +286,15 @@ scene(105.5, 110.84,
 
 // 17. Follow
 scene(110.84, 999,
-  A(110.9, 'pop', bell(), { x: 520, y: 330, s: 1.3 }) +
+  A(110.9, 'pop', bell(), { x: 520, y: 330, s: 1.3, sfx: 'bell' }) +
   A(111.3, 'stamp', pill('FOLLOW', RED, '#fff', 74, 46), { x: 360, y: 600 }) +
-  A(111.9, 'pop', sparks(150), { x: 360, y: 585, s: 1.6 }) +
+  A(111.9, 'pop', sparks(150), { x: 360, y: 585, s: 1.6, sfx: 'sparkle' }) +
   character({ x: 360, y: 1200, s: .72, pose: [[110.84, 'thumbs']], expr: [[110.84, 'happy']] }));
 
 // ---------- build ----------
 const root = document.getElementById('root');
-root.innerHTML = SC.map((c, i) => `<g class="scene" id="s${i}" data-s="${c.s}" data-e="${c.e}" style="display:none"><g class="cam">${c.body}</g></g>`).join('');
-const scenes = [...document.querySelectorAll('.scene')].map(el => ({ el, s: +el.dataset.s, e: +el.dataset.e, cam: el.firstChild, ans: [...el.querySelectorAll('.an')], chars: [...el.querySelectorAll('.char')] }));
+root.innerHTML = SC.map((c, i) => `<g class="scene" id="s${i}" data-s="${c.s}" data-e="${c.e}" style="display:none"><g class="mbw"><g class="cam">${c.body}</g></g></g>`).join('');
+const scenes = [...document.querySelectorAll('.scene')].map(el => ({ el, s: +el.dataset.s, e: +el.dataset.e, mbw: el.firstChild, cam: el.firstChild.firstChild, ans: [...el.querySelectorAll('.an')], chars: [...el.querySelectorAll('.char')] }));
 for (const el of document.querySelectorAll('.an')) {
   if (el.dataset.a === 'draw') el.querySelectorAll('[pathLength]').forEach(p => p.setAttribute('stroke-dasharray', '1 1'));
   if (el.dataset.a === 'count') { const t = el.querySelector('text[data-n]'); el._t = t; }
@@ -292,7 +304,7 @@ const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const eOut = p => 1 - Math.pow(1 - p, 3);
 const eBack = p => { const c = 1.9; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
 const eBounce = p => { const n = 7.5625, d = 2.75; if (p < 1 / d) return n * p * p; if (p < 2 / d) return n * (p -= 1.5 / d) * p + .75; if (p < 2.5 / d) return n * (p -= 2.25 / d) * p + .9375; return n * (p -= 2.625 / d) * p + .984375; };
-const DUR = { pop: .45, up: .45, fade: .4, draw: .55, drop: .75, grow: 1.2, fly: 2, count: 1.4, stamp: .32 };
+const DUR = { mark: .4, pop: .45, up: .45, fade: .4, draw: .55, drop: .75, grow: 1.2, fly: 2, count: 1.4, stamp: .32 };
 const fmt = n => n.toLocaleString('en-US');
 
 function animEl(el, t) {
@@ -305,6 +317,7 @@ function animEl(el, t) {
     case 'pop': st.transform = `scale(${eBack(p)})`; st.opacity = clamp(p * 4); break;
     case 'up': st.transform = `translateY(${(1 - eOut(p)) * 40}px)`; st.opacity = clamp(p * 2); break;
     case 'fade': st.opacity = p; break;
+    case 'mark': st.transformOrigin = 'left'; st.transform = `scaleX(${Math.max(.001, eOut(p))})`; break;
     case 'stamp': st.transform = `scale(${2.2 - 1.2 * eOut(p)})`; st.opacity = clamp(p * 3); break;
     case 'drop': st.transform = `translateY(${-(1 - eBounce(p)) * 500}px)`; break;
     case 'grow': st.transformOrigin = 'bottom'; st.transform = `scaleY(${Math.max(.001, eOut(p))})`; break;
@@ -331,9 +344,10 @@ function drawChar(c, t, amp) {
   const bob = Math.sin(t * 2.4) * 3 + amp * 3;
   c.setAttribute('transform', `translate(${d.x},${+d.y}) scale(${d.s * d.flip},${d.s})`);
   c.querySelector('.body').setAttribute('transform', `translate(0,${-bob})`);
+  c.querySelector('.head').setAttribute('transform', `translate(0,-470) rotate(${Math.sin(t * 1.7) * 3 + amp * 4 * Math.sin(t * 9)})`);
   let arms = '';
   for (const [side, key, sx] of [[1, 'R', 46], [-1, 'L', -46]]) {
-    const wob = (key === 'R' ? Math.sin(t * 3.1) : Math.sin(t * 2.7 + 1)) * 4 * (1 + amp);
+    const wob = (key === 'R' ? Math.sin(t * 3.1) : Math.sin(t * 2.7 + 1)) * 4 * (1 + amp * 2.5);
     const a1 = Q[key][0] + (P[key][0] - Q[key][0]) * k + wob, a2 = Q[key][1] + (P[key][1] - Q[key][1]) * k + wob;
     const ap = armPath(sx, -372 - bob, a1, a2, side);
     arms += `<path d="${ap.d}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -367,20 +381,31 @@ function drawChar(c, t, amp) {
   c.querySelector('.mouth').innerHTML = m;
 }
 
+const TR = 0.3;
+const STAMPS = [...document.querySelectorAll('.an[data-a="stamp"]')].map(e => +e.dataset.in);
 window.render = function (t) {
   const amp = AMP[Math.min(AMP.length - 1, Math.floor(t * 24))] || 0;
   const filt = 'url(#r' + (Math.floor(t * 8) % 3) + ')';
-  for (const sc of scenes) {
-    const on = t >= sc.s - 0.001 && t < sc.e;
+  let shx = 0, shy = 0, punch = 0;
+  for (const st of STAMPS) { const d = t - st - .12; if (d > 0 && d < .35) { const k = Math.exp(-d * 14); shx += Math.sin(d * 90) * 9 * k; shy += Math.cos(d * 75) * 7 * k; punch += .05 * k; } }
+  document.getElementById('root').setAttribute('transform', `translate(${shx},${shy})`);
+  document.getElementById('prog').setAttribute('width', 720 * clamp(t / 113.57));
+  scenes.forEach((sc, i) => {
+    const on = t >= sc.s - 0.001 && t < sc.e + (i < scenes.length - 1 ? TR : 0);
     sc.el.style.display = on ? '' : 'none';
-    if (!on) continue;
+    if (!on) return;
     const lt = t - sc.s;
-    sc.el.style.opacity = clamp(lt / .18);
-    sc.cam.style.transform = `scale(${1 + .035 * clamp(lt / Math.min(10, sc.e - sc.s))})`;
+    let tx = 0, blur = false;
+    if (i > 0 && lt < TR) { const p = lt / TR; tx = (1 - eOut(p)) * 760; blur = p < .8; }
+    if (t >= sc.e) { const p = (t - sc.e) / TR; tx = -Math.pow(p, 2) * 760; blur = true; }
+    sc.el.style.transform = `translateX(${tx}px)`;
+    sc.mbw.setAttribute('filter', blur ? 'url(#mb)' : '');
+    sc.cam.style.transform = `scale(${1 + .035 * clamp(lt / Math.min(10, sc.e - sc.s)) + punch})`;
     sc.el.setAttribute('filter', filt);
     for (const el of sc.ans) animEl(el, t);
     for (const c of sc.chars) drawChar(c, t, amp);
-  }
+  });
 };
+window.cues = () => [...document.querySelectorAll('.an')].map(e => ({ t: +e.dataset.in, a: e.dataset.a, sfx: e.dataset.sfx || '', dur: +(e.dataset.dur || DUR[e.dataset.a]), money: !!e.querySelector('text[data-pre]') })).concat(scenes.slice(1).map(sc => ({ t: sc.s, a: 'scene', sfx: '', dur: TR })));
 render(0);
 </script></body></html>

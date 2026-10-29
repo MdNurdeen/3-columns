@@ -8,7 +8,7 @@ const dir = __dirname, mode = process.argv[2];
   p.on('pageerror', e => console.error('ERR', e.message));
   await p.goto('file://' + path.join(dir, 'video.html'));
   await p.evaluate(() => document.fonts.ready);
-  if (mode === 'stills') {
+  if (mode === 'cues') { fs.writeFileSync(path.join(dir, 'cues.json'), JSON.stringify(await p.evaluate(() => cues()))); } else if (mode === 'stills') {
     const ts = process.argv.slice(3).map(Number);
     for (const t of ts) { await p.evaluate(t => render(t), t); await p.screenshot({ path: path.join(dir, `still_${t}.png`) }); }
   } else {
