@@ -25,6 +25,10 @@ text{font-family:K;}
 <g id="root"></g>
 <rect width="720" height="1280" filter="url(#grain)" opacity=".05" pointer-events="none"/>
 <rect width="720" height="1280" fill="url(#vig)"/>
+<clipPath id="lc"><circle cx="300" cy="300" r="292"/></clipPath>
+<g id="wm" transform="translate(632,18) scale(.123)"><circle cx="300" cy="300" r="300" fill="#fff"/><image href="logo.png" width="600" height="600" clip-path="url(#lc)"/></g>
+<g id="endlogo" style="display:none"><g id="endlogoIn"><circle cx="0" cy="0" r="160" fill="#fff" opacity=".9"/><image href="logo.png" x="-150" y="-150" width="300" height="300" clip-path="url(#lc2)"/></g></g>
+<clipPath id="lc2"><circle cx="0" cy="0" r="146"/></clipPath>
 <rect x="0" y="0" width="720" height="7" fill="#e9e9e4"/><rect id="prog" x="0" y="0" width="0" height="7" fill="#3d8bd4"/>
 </svg>
 <script>
@@ -430,9 +434,9 @@ scene(105.5, 110.84,
 
 // 17. Follow
 scene(110.84, 999,
-  A(110.9, 'pop', bell(), { x: 520, y: 330, s: 1.3, sfx: 'bell' }) +
-  A(111.3, 'stamp', pill('FOLLOW', RED, '#fff', 74, 46), { x: 360, y: 600 }) +
-  A(111.9, 'pop', sparks(150), { x: 360, y: 585, s: 1.6, sfx: 'sparkle' }) +
+  A(110.95, 'pop', '', { sfx: 'sparkle' }) + A(111.6, 'pop', bell(), { x: 600, y: 590, s: .75, sfx: 'bell' }) +
+  A(111.3, 'stamp', pill('FOLLOW', '#04452f', '#fff', 70, 42), { x: 330, y: 600 }) +
+  A(111.0, 'pop', sparks(150), { x: 360, y: 300, s: 1.35 }) +
   character({ x: 360, y: 1200, s: .72, pose: [[110.84, 'wave'], [112.5, 'thumbs']], expr: [[110.84, 'happy'], [111.3, 'excited'], [112.5, 'wink']], act: [[110.84, 'wave', 1.6], [111.3, 'hop', .45], [112.5, 'spin', .6]] }));
 
 // ---------- build ----------
@@ -482,6 +486,10 @@ window.render = function (t) {
   for (const st of STAMPS) { const d = t - st - .12; if (d > 0 && d < .35) { const k = Math.exp(-d * 14); shx += Math.sin(d * 90) * 9 * k; shy += Math.cos(d * 75) * 7 * k; punch += .05 * k; } }
   document.getElementById('root').setAttribute('transform', `translate(${shx},${shy})`);
   document.getElementById('prog').setAttribute('width', 720 * clamp(t / 113.57));
+  const LT = 110.95, el = document.getElementById('endlogo');
+  document.getElementById('wm').style.display = t >= 110.84 ? 'none' : '';
+  el.style.display = t >= LT ? '' : 'none';
+  if (t >= LT) { const p = clamp((t - LT) / .55); el.setAttribute('transform', `translate(360,${300 + Math.sin(t * 2.4) * 4}) scale(${eBack(p)}) rotate(${(1 - eOut(p)) * -25})`); }
   scenes.forEach((sc, i) => {
     const on = t >= sc.s - 0.001 && t < sc.e + (i < scenes.length - 1 ? TR : 0);
     sc.el.style.display = on ? '' : 'none';

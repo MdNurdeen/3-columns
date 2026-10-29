@@ -148,9 +148,9 @@ vo = vo.mean(1); vo = np.pad(vo, (0, len(fx) - len(vo)))[:len(fx)]
 ve = np.convolve(np.abs(vo), np.ones(int(.25 * SR)) / int(.25 * SR), 'same'); ve = np.clip(ve / np.percentile(ve, 90), 0, 1)
 tm = np.arange(len(mus)) / SR
 fade = np.clip(tm / 1.5, 0, 1) * np.clip((dur - tm) / 2.5, 0, 1)
-mus = norm(mus, .1) * (1 - .45 * ve) * fade
+mus = norm(mus, .06) * (1 - .6 * ve) * fade
 voN = vo / (np.abs(vo).max() + 1e-9) * .85
-out = voN + mus + fx * .9
+out = voN + mus + fx * .45 * (1 - .3 * ve)
 out = out[:int(dur * SR)]
 sf.write('mix_raw.wav', np.stack([out, out], 1).astype(np.float32), SR)
 print('peak', np.abs(out).max())
