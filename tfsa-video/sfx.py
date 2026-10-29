@@ -82,7 +82,6 @@ for c in sorted(cues, key=lambda c: c['t']):
     extra = [k for k in sx.split('+') if k] if sx else []
     if a == 'act':
         if sx in ('hop', 'jump', 'spin'): put('hop', t + .06, g=.38 if sx == 'jump' else None, minGap=.2)
-        if sx == 'spin': put('swish', t, g=.25, minGap=0)
         if sx == 'hops':
             for k in np.arange(0, d, .5): put('hop', t + k + .06, g=.2, minGap=0)
         if sx == 'stomp':
@@ -97,12 +96,13 @@ for c in sorted(cues, key=lambda c: c['t']):
         m = dict(shock='ping', jawdrop='ping', dizzy='tweet', money='cash', star='sparkle', excited='sparkle', scared='drip', worry='drip', wink='ting', think='boop', cry='sob', angry='grr')
         if sx in m: put(m[sx], t, minGap=.6)
         continue
-    if a == 'scene': put('whoosh', t - .05)
-    elif a == 'up': put('swish', t, minGap=.35)
+    if a == 'scene':
+        if any(abs(t - k) < .05 for k in (11.40, 32.38, 59.0, 71.6, 94.58)): put('whoosh', t - .05, g=.28, minGap=0)
+    elif a == 'up': pass
     elif a == 'pop' and not extra: put('pop', t)
     elif a == 'stamp': put('stamp', t + .1, minGap=0); extra = [e for e in extra if e != 'stamp']
-    elif a == 'drop': put('swish', t, minGap=.2); put('wood', t + .27 * d, minGap=0)
-    elif a == 'fly': put('whoosh', t + .3, g=.25, minGap=.5); put('cash', t + .2, minGap=5)
+    elif a == 'drop': put('wood', t + .27 * d, minGap=0)
+    elif a == 'fly': put('cash', t + .2, minGap=5)
     elif a == 'mark': put('marker', t, x=scribble(.4), minGap=0)
     elif a == 'grow': put('rise', t, x=rise(d), minGap=0)
     elif a == 'draw' and 'ding' not in extra: put('scribble', t, x=scribble(d), minGap=0)
