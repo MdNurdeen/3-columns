@@ -55,7 +55,18 @@ def scribble(d):
     return norm(bp(n, 2500, 7500) * (.3 + .7 * am) * np.sin(np.pi * t / d) ** .5)
 def rise(d): return norm(sweep(220, 880, d, lambda p: np.sin(p) + .3 * np.sin(2 * p)) * np.sin(np.pi * T(d) / d / 2) * env(int(d * SR), .05))
 
-GAIN = dict(pop=.42, whoosh=.42, swish=.14, stamp=.75, wood=.45, wrong=.32, ding=.3, cash=.38, tick=.12, sparkle=.25, bell=.42, alert=.3, boing=.35, lose=.3, scribble=.13, marker=.16, rise=.12)
+S['hop'] = norm(sweep(260, 820, .16) * env(int(.16 * SR), .002, .07) * (1 + .4 * np.sin(2 * np.pi * 40 * T(.16))))
+S['step'] = norm(bp(noise(.05), 120, 900) * env(int(.05 * SR), .001, .012))
+S['ping'] = norm(tone(2349, .5, .14, (1, 2.01)) + .5 * np.pad(tone(3136, .42, .12), (int(.08 * SR), 0)))
+S['tweet'] = norm(np.concatenate([np.concatenate([sweep(2600, 4200, .07) * env(int(.07 * SR), .005, .04), np.zeros(int(.05 * SR))]) for _ in range(3)]))
+S['drip'] = norm(sweep(500, 1500, .09) * env(int(.09 * SR), .002, .04))
+S['ting'] = norm(tone(3520, .6, .16, (1, 2.4)))
+S['boop'] = norm(sweep(700, 420, .14) * env(int(.14 * SR), .004, .07))
+S['sob'] = norm(np.concatenate([bp(saw(f, .16), 200, 2500) * env(int(.16 * SR), .01, .1) * (1 + .5 * np.sin(2 * np.pi * 9 * T(.16))) for f in (520, 490, 460)]))
+S['scratch'] = norm(bp(noise(.5), 1500, 5000) * (.5 + .5 * np.sign(np.sin(2 * np.pi * 13 * T(.5)))) * env(int(.5 * SR), .01))
+S['clap'] = norm(bp(noise(.06), 800, 6000) * env(int(.06 * SR), .0005, .012))
+S['grr'] = norm(bp(sq(70, .5) * (1 + .6 * np.sin(2 * np.pi * 23 * T(.5))), 60, 900) * env(int(.5 * SR), .02, .3))
+GAIN = dict(hop=.3, step=.18, ping=.3, tweet=.22, drip=.25, ting=.22, boop=.22, sob=.22, scratch=.12, clap=.3, grr=.25, pop=.42, whoosh=.42, swish=.14, stamp=.75, wood=.45, wrong=.32, ding=.3, cash=.38, tick=.12, sparkle=.25, bell=.42, alert=.3, boing=.35, lose=.3, scribble=.13, marker=.16, rise=.12)
 cues = json.load(open('cues.json'))
 dur = 113.6
 fx = np.zeros(int((dur + 2) * SR))
@@ -69,6 +80,23 @@ for c in sorted(cues, key=lambda c: c['t']):
     t, a, sx, d = c['t'], c['a'], c['sfx'], c['dur']
     if sx == 'none': continue
     extra = [k for k in sx.split('+') if k] if sx else []
+    if a == 'act':
+        if sx in ('hop', 'jump', 'spin'): put('hop', t + .06, g=.38 if sx == 'jump' else None, minGap=.2)
+        if sx == 'spin': put('swish', t, g=.25, minGap=0)
+        if sx == 'hops':
+            for k in np.arange(0, d, .5): put('hop', t + k + .06, g=.2, minGap=0)
+        if sx == 'stomp':
+            for k in np.arange(0, d, .28): put('step', t + k + .25, g=.35, minGap=0)
+        if sx == 'walk':
+            for k in np.arange(.1, d, 1 / 3.5): put('step', t + k, minGap=0)
+        if sx == 'scratch': put('scratch', t, minGap=0)
+        if sx == 'clap':
+            for k in np.arange(.13, d, np.pi / 11): put('clap', t + k, minGap=0)
+        continue
+    if a == 'expr':
+        m = dict(shock='ping', jawdrop='ping', dizzy='tweet', money='cash', star='sparkle', excited='sparkle', scared='drip', worry='drip', wink='ting', think='boop', cry='sob', angry='grr')
+        if sx in m: put(m[sx], t, minGap=.6)
+        continue
     if a == 'scene': put('whoosh', t - .05)
     elif a == 'up': put('swish', t, minGap=.35)
     elif a == 'pop' and not extra: put('pop', t)

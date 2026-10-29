@@ -77,42 +77,186 @@ const bell = () => `<path d="M-40,30 Q-40,-50 0,-52 Q40,-50 40,30 L52,44 H-52 Z"
 const sparks = (r = 120) => Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); return line(c * r, s * r, c * (r + 30), s * (r + 30), INK, 5); }).join('');
 
 // ---------- character ----------
-const POSES = { // [shoulder, elbow] angles (deg from straight down, + = outward) for R and L arm
-  idle: { R: [22, 12], L: [22, 12] },
-  point: { R: [105, 128], L: [22, 12] },
-  pointUp: { R: [150, 168], L: [22, 12] },
-  pointL: { R: [22, 12], L: [105, 128] },
-  shrug: { R: [62, 150], L: [62, 150] },
-  think: { R: [18, 205], L: [30, 330] },
-  present: { R: [58, 88], L: [58, 88] },
-  thumbs: { R: [40, 160], L: [22, 12] },
-  hold: { R: [22, 12], L: [50, 105] },
-  holdR: { R: [50, 105], L: [22, 12] },
-  hips: { R: [40, -50], L: [40, -50] },
+const L1 = 88, L2 = 84, SHX = 46, SHY = -372;
+const LF = [-66, -212, 'fist'], RF = [66, -212, 'fist'];
+const HP = { // hand targets [x, y, handShape], character space (feet = 0,0)
+  idle: { R: RF, L: LF },
+  point: { R: [205, -450, 'point'], L: LF },
+  pointUp: { R: [95, -540, 'point'], L: LF },
+  pointL: { R: RF, L: [-205, -450, 'point'] },
+  shrug: { R: [125, -430, 'open'], L: [-125, -430, 'open'] },
+  think: { R: [22, -402, 'fist'], L: [-30, -300, 'fist'] },
+  present: { R: [175, -330, 'open'], L: [-175, -330, 'open'] },
+  thumbs: { R: [120, -440, 'thumb'], L: LF },
+  hold: { R: RF, L: [-110, -250, 'fist'] },
+  hips: { R: [64, -250, 'fist'], L: [-64, -250, 'fist'] },
+  cheer: { R: [125, -545, 'open'], L: [-125, -545, 'open'] },
+  facepalm: { R: [8, -482, 'open'], L: LF },
+  scratch: { R: [45, -550, 'fist'], L: LF },
+  cheeks: { R: [86, -442, 'open'], L: [-86, -442, 'open'] },
+  reach: { R: [80, -565, 'open'], L: [-80, -565, 'open'] },
+  wave: { R: [150, -525, 'open'], L: LF },
+  wag: { R: [120, -485, 'point'], L: [-64, -250, 'fist'] },
+  guns: { R: [178, -390, 'point'], L: [-178, -390, 'point'] },
+  clap: { R: [16, -330, 'open'], L: [-16, -330, 'open'] },
 };
+const LOOK = { c: [0, 0], r: [7, 0], l: [-7, 0], u: [0, -6], ur: [6, -5], ul: [-6, -5], d: [0, 5], dl: [-6, 4], dr: [6, 4] };
 let charId = 0;
-const character = (o) => {
-  const id = 'c' + (charId++);
-  return `<g class="char" id="${id}" data-x="${o.x}" data-y="${o.y}" data-s="${o.s || 1}" data-flip="${o.flip ? -1 : 1}" data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-hand="${o.hand || ''}">
-   <g class="body">
-    <ellipse cx="0" cy="2" rx="125" ry="15" fill="#000" opacity=".09"/>
-    <path d="M-24,-205 L-30,-12 M24,-205 L30,-12" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>
-    <ellipse cx="-40" cy="-8" rx="20" ry="9" fill="${INK}"/><ellipse cx="40" cy="-8" rx="20" ry="9" fill="${INK}"/>
+const character = (o) => `<g class="char" id="c${charId++}" data-x="${o.x}" data-y="${o.y}" data-s="${o.s || 1}" data-flip="${o.flip ? -1 : 1}"
+  data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-act='${JSON.stringify(o.act || [])}' data-look='${JSON.stringify(o.look || [[0, 'c']])}'></g>`;
+
+function ik(sx, sy, hx, hy, side) {
+  let dx = hx - sx, dy = hy - sy, d = Math.hypot(dx, dy); const mx = L1 + L2 - 1;
+  if (d > mx) { dx *= mx / d; dy *= mx / d; hx = sx + dx; hy = sy + dy; d = mx; }
+  d = Math.max(d, 24);
+  const a = Math.atan2(dy, dx), b = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1));
+  const e1 = [sx + L1 * Math.cos(a + b), sy + L1 * Math.sin(a + b)], e2 = [sx + L1 * Math.cos(a - b), sy + L1 * Math.sin(a - b)];
+  const e = side * e1[0] + .35 * e1[1] > side * e2[0] + .35 * e2[1] ? e1 : e2;
+  return { ex: e[0], ey: e[1], hx, hy };
+}
+function hand(x, y, ux, uy, shape) {
+  const r = (a, l) => { const c = Math.cos(a), s = Math.sin(a); return [x + (ux * c - uy * s) * l, y + (ux * s + uy * c) * l]; };
+  let h = '';
+  if (shape === 'point') { const [fx, fy] = r(0, 24); h += `<path d="M${x},${y} L${fx},${fy}" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>`; }
+  if (shape === 'thumb') h += `<path d="M${x},${y} L${x},${y - 28}" stroke="${INK}" stroke-width="10" stroke-linecap="round"/>`;
+  if (shape === 'open') for (const a of [-.7, 0, .7]) { const [fx, fy] = r(a, 19); h += `<path d="M${x},${y} L${fx},${fy}" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>`; }
+  return h + `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 11 : 13}" fill="${INK}"/>`;
+}
+const star5 = (r, fill = '#ffd43b') => { let p = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; p += (i ? 'L' : 'M') + (Math.cos(a) * rr).toFixed(1) + ',' + (Math.sin(a) * rr).toFixed(1); } return `<path d="${p}Z" fill="${fill}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`; };
+const spark4 = (r) => `<path d="M0,${-r} Q2,-2 ${r},0 Q2,2 0,${r} Q-2,2 ${-r},0 Q-2,-2 0,${-r}Z" fill="#ffd43b" stroke="${INK}" stroke-width="2.5"/>`;
+
+function face(ex, t, amp, lk, blink) {
+  const [lx, ly] = lk; let eyes = '', brows = '', mouth = '', emo = '', tint = '#fff';
+  const E = (x) => `<ellipse cx="${x + lx}" cy="${-10 + ly}" rx="8.5" ry="${13 * blink}" fill="${INK}"/>` + (blink > .5 ? `<circle cx="${x + lx + 3}" cy="${-15 + ly}" r="3.4" fill="#fff"/>` : '');
+  const arcUp = (x) => `<path d="M${x - 11},${-6} Q${x},${-22} ${x + 11},${-6}" stroke="${INK}" stroke-width="5.5" fill="none" stroke-linecap="round"/>`;
+  const bw = (l, r) => `<path d="${l} ${r}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const my = 36, talk = amp > .1;
+  const grin = (w, k = 1) => { const o = 10 + amp * 18 * k; return `<path d="M${-w},${my - 6} Q0,${my - 6 + o * 2.1} ${w},${my - 6} Z" fill="#3a1f1f" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/><path d="M${-w * .45},${my - 6 + o * 1.25} Q0,${my - 6 + o * .7} ${w * .45},${my - 6 + o * 1.25} Q0,${my - 6 + o * 1.6} ${-w * .45},${my - 6 + o * 1.25}Z" fill="#ff8a9a"/><path d="M${-w + 5},${my - 5} Q0,${my} ${w - 5},${my - 5}" stroke="#fff" stroke-width="4.5" fill="none"/>`; };
+  const smileC = (w = 26) => `<path d="M${-w},${my - 6} Q0,${my + 18} ${w},${my - 6}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const oMouth = (rx, ry) => `<ellipse cx="0" cy="${my + 4}" rx="${rx}" ry="${ry}" fill="#3a1f1f" stroke="${INK}" stroke-width="4"/><ellipse cx="0" cy="${my + 4 + ry * .45}" rx="${rx * .6}" ry="${ry * .35}" fill="#ff8a9a"/>`;
+  const wavy = (o) => `<path d="M-24,${my} q6,${-8 - o} 12,0 t12,0 t12,0 t12,0" stroke="${INK}" stroke-width="5" fill="${o > 2 ? '#3a1f1f' : 'none'}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const frown = (o) => o > 2 ? `<path d="M-20,${my + 10} Q0,${my - 8 - o} 20,${my + 10} Z" fill="#3a1f1f" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>` : `<path d="M-20,${my + 10} Q0,${my - 6} 20,${my + 10}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const bob = Math.sin(t * 6) * 4;
+  switch (ex) {
+    case 'smile': eyes = E(-28) + E(28); brows = bw(`M-42,-38 q13,-10 26,-2`, `M16,-40 q13,-8 26,2`); mouth = talk ? grin(26, .7) : smileC(); break;
+    case 'happy': eyes = arcUp(-28) + arcUp(28); brows = bw(`M-42,-40 q13,-10 26,-2`, `M16,-42 q13,-8 26,2`); mouth = grin(30); break;
+    case 'excited': eyes = E(-28) + E(28) + `<circle cx="${-31 + lx}" cy="${-4 + ly}" r="2" fill="#fff"/><circle cx="${25 + lx}" cy="${-4 + ly}" r="2" fill="#fff"/>`; brows = bw(`M-44,-46 q13,-12 26,-2`, `M18,-48 q13,-8 26,4`); mouth = grin(32, 1.3);
+      emo = [[-110, -70, 0], [112, -40, 1.3], [80, -130, 2.4]].map(([x, y, p]) => `<g transform="translate(${x},${y}) scale(${.6 + .5 * Math.abs(Math.sin(t * 5 + p))})">${spark4(16)}</g>`).join(''); break;
+    case 'shock': { const k = 1 + .06 * Math.sin(t * 30); eyes = [-30, 30].map(x => `<circle cx="${x}" cy="-12" r="${18 * k}" fill="#fff" stroke="${INK}" stroke-width="4.5"/><circle cx="${x + lx * .6}" cy="${-12 + ly * .6}" r="5.5" fill="${INK}"/>`).join('');
+      brows = bw(`M-48,-50 q16,-14 32,-4`, `M16,-54 q16,-10 32,4`); mouth = oMouth(12 + amp * 4, 15 + amp * 10); emo = `<g transform="translate(0,${-128 + bob})">${txt(0, 0, '!', 80, { fill: RED })}</g>`; break; }
+    case 'jawdrop': { const k = 1.15 + .12 * Math.abs(Math.sin(t * 14)); eyes = [-32, 32].map(x => `<circle cx="${x}" cy="-14" r="${21 * k}" fill="#fff" stroke="${INK}" stroke-width="4.5"/><circle cx="${x}" cy="-14" r="4.5" fill="${INK}"/>`).join('');
+      brows = bw(`M-52,-62 q18,-14 34,-4`, `M18,-66 q18,-10 34,4`); mouth = oMouth(16, 32 + amp * 10); emo = `<g transform="translate(0,${-130 + bob})">${txt(0, 0, '!!', 84, { fill: RED })}</g>`; break; }
+    case 'worry': case 'scared': eyes = E(-28) + E(28); brows = bw(`M-44,-30 L-16,-42`, `M16,-42 L44,-30`); mouth = wavy(talk ? amp * 12 : 0);
+      emo = `<path transform="translate(84,${-50 + (t * 40 % 30)})" d="M0,-18 Q14,4 0,12 Q-14,4 0,-18Z" fill="#8fd0ff" stroke="${INK}" stroke-width="3"/>`; break;
+    case 'sad': eyes = E(-28) + E(28); brows = bw(`M-44,-30 L-16,-42`, `M16,-42 L44,-30`); mouth = frown(talk ? amp * 14 : 0); break;
+    case 'cry': eyes = bw(`M-40,-20 L-20,-10 L-40,-2`, `M40,-20 L20,-10 L40,-2`); brows = bw(`M-44,-34 L-16,-44`, `M16,-44 L44,-34`);
+      mouth = `<path d="M-26,${my + 14} Q0,${my - 14 - amp * 12} 26,${my + 14} Q0,${my + 6} -26,${my + 14}Z" fill="#3a1f1f" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`;
+      emo = [-1, 1].map(s => `<path d="M${s * 32},-2 q${s * 10},20 ${s * 4},40 t${s * 6},40" stroke="#6bbcf5" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="14 10" stroke-dashoffset="${-t * 90}"/>` +
+        `<path transform="translate(${s * (46 + (t * 37 % 1) * 30)},${30 + (t * 37 % 1) * 70})" d="M0,-9 Q7,2 0,6 Q-7,2 0,-9Z" fill="#8fd0ff"/>`).join(''); break;
+    case 'money': eyes = [-30, 30].map(x => `<g transform="translate(${x},-10) scale(${1 + .12 * Math.sin(t * 12)})">${txt(0, 13, '$', 46, { fill: GREEN })}</g>`).join(''); brows = bw(`M-44,-44 q13,-12 26,-2`, `M18,-46 q13,-8 26,4`); mouth = grin(32, 1.2);
+      emo = [0, .5].map(p => { const q = (t * .9 + p) % 1; return `<g transform="translate(${100 - q * 20},${-60 - q * 90})" opacity="${1 - q}">${txt(0, 0, '$', 40, { fill: GREEN })}</g>`; }).join(''); break;
+    case 'star': eyes = [-30, 30].map(x => `<g transform="translate(${x},-10) rotate(${t * 90}) scale(${1 + .1 * Math.sin(t * 10)})">${star5(17)}</g>`).join(''); brows = ''; mouth = grin(32, 1.3);
+      emo = [[-105, -60, 0], [108, -70, 2]].map(([x, y, p]) => `<g transform="translate(${x},${y}) scale(${.5 + .5 * Math.abs(Math.sin(t * 4 + p))})">${spark4(18)}</g>`).join(''); break;
+    case 'dizzy': eyes = [-28, 28].map(x => `<path transform="translate(${x},-10) rotate(${t * 400})" d="M0,0 m-2,0 a2,2 0 1,1 4,0 a5,5 0 1,1 -10,0 a8,8 0 1,1 16,0 a11,11 0 1,1 -22,0" stroke="${INK}" stroke-width="3.5" fill="none"/>`).join('');
+      mouth = wavy(talk ? amp * 10 : 2); emo = [0, 2.1, 4.2].map(p => { const a = t * 4 + p; return `<g transform="translate(${Math.cos(a) * 78},${-96 + Math.sin(a) * 18}) scale(${Math.sin(a) > 0 ? 1 : .7})">${star5(12)}</g>`; }).join(''); break;
+    case 'think': eyes = E(-28) + E(28); brows = bw(`M-42,-34 q12,-6 26,-2`, `M16,-50 q14,-10 28,0`); mouth = talk ? `<ellipse cx="8" cy="${my + 2}" rx="${8 + amp * 5}" ry="${6 + amp * 9}" fill="#3a1f1f" stroke="${INK}" stroke-width="3.5"/>` : `<path d="M-10,${my + 2} q12,4 24,-4" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+      emo = `<g transform="translate(100,${-110 + bob}) rotate(12)">${txt(0, 0, '?', 74, { fill: BLUE })}</g>`; break;
+    case 'smug': eyes = [-28, 28].map(x => `<path d="M${x - 11 + lx},-12 L${x + 11 + lx},-12 A11,11 0 0 1 ${x - 11 + lx},-12Z" fill="${INK}"/><path d="M${x - 13},-13 L${x + 13},-15" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>`).join('');
+      brows = bw(`M-42,-32 L-16,-34`, `M16,-36 q13,-8 26,0`); mouth = talk ? grin(22, .6) : `<path d="M-18,${my} Q8,${my + 12} 26,${my - 8}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`; break;
+    case 'wink': eyes = arcUp(-28) + E(28); brows = bw(`M-42,-36 q13,-10 26,-2`, `M16,-42 q13,-8 26,2`); mouth = grin(28, .8);
+      emo = `<g transform="translate(-92,-48) scale(${.6 + .4 * Math.abs(Math.sin(t * 6))})">${spark4(15)}</g>`; break;
+    case 'angry': tint = '#ffe1dc'; eyes = E(-28) + E(28); brows = bw(`M-46,-40 L-14,-26`, `M14,-26 L46,-40`); mouth = frown(talk ? amp * 16 : 0);
+      emo = `<g transform="translate(66,-66) scale(${1 + .15 * Math.sin(t * 16)})" stroke="${RED}" stroke-width="6" fill="none" stroke-linecap="round"><path d="M-14,-4 q10,-2 10,-12 M4,-16 q2,10 12,10 M16,4 q-10,2 -10,12 M-4,16 q-2,-10 -12,-10"/></g>`; break;
+  }
+  return { eyes, brows, mouth, emo, tint };
+}
+
+function drawChar(c, t, amp) {
+  const d = c.dataset; c._P = c._P || { pose: JSON.parse(d.pose), expr: JSON.parse(d.expr), act: JSON.parse(d.act), look: JSON.parse(d.look) };
+  const P = c._P;
+  const { cur, prev } = lookup(P.pose, t);
+  const k = cur === prev ? 1 : eOut(clamp((t - cur[0]) / .28));
+  const A1 = HP[cur[1]], A0 = HP[prev[1]];
+  const ex = lookup(P.expr, t).cur[1];
+  const exStart = lookup(P.expr, t).cur[0];
+  // actions
+  let jy = 0, sqy = 1, wx = 0, rot = 0, hrot = Math.sin(t * 1.7) * 3, nod = 0, walkPh = null, air = 0, spin = 1;
+  const off = { R: [0, 0], L: [0, 0] };
+  for (const [ts, name, dur = .5, arg] of P.act) {
+    const lt = t - ts; if (lt < 0 || lt > dur) continue; const p = lt / dur;
+    const hop = (q, H) => { if (q < .15) { sqy = Math.min(sqy, 1 - .14 * q / .15); } else if (q < .85) { const a = (q - .15) / .7; jy += Math.sin(Math.PI * a) * H; sqy = 1.07; air = 1; } else sqy = Math.min(sqy, 1 - .12 * Math.sin(Math.PI * (q - .85) / .15)); };
+    switch (name) {
+      case 'hop': hop(p, 55); break;
+      case 'jump': hop(p, 120); break;
+      case 'hops': hop((lt % .5) / .5, 45); break;
+      case 'stomp': hop((lt % .28) / .28, 16); break;
+      case 'walk': wx = -(arg || 300) * (1 - p); walkPh = lt * 11; jy += Math.abs(Math.sin(walkPh)) * 8; break;
+      case 'shake': wx += Math.sin(lt * 70) * 9 * (1 - p); break;
+      case 'tremble': wx += Math.sin(lt * 90) * 3; rot += Math.sin(lt * 70) * 1.2; break;
+      case 'wobble': rot += Math.sin(lt * 5) * 7; hrot += Math.sin(lt * 5 + 1) * 8; break;
+      case 'dance': rot += Math.sin(lt * Math.PI * 2 * 1.53) * 7; hop((lt % .65) / .65, 22); off.R[1] += Math.sin(lt * 9.6) * 60; off.L[1] -= Math.sin(lt * 9.6) * 60; break;
+      case 'spin': spin = Math.cos(p * Math.PI * 2); hop(p, 40); break;
+      case 'nod': nod += Math.sin(p * Math.PI * 4) * 8 * (1 - p); break;
+      case 'shakehead': hrot += Math.sin(lt * 22) * 12 * (1 - p); break;
+      case 'tilt': hrot += Math.sin(Math.PI * p) * 12; break;
+      case 'wave': off.R[0] += Math.sin(lt * 15) * 30; break;
+      case 'wag': off.R[0] += Math.sin(lt * 17) * 20; break;
+      case 'scratch': off.R[0] += Math.sin(lt * 26) * 8; off.R[1] += Math.cos(lt * 26) * 5; break;
+      case 'reach': off.R[1] += Math.sin(lt * 10) * 30; off.L[1] -= Math.sin(lt * 10) * 30; off.R[0] += Math.cos(lt * 7) * 20; break;
+      case 'clap': off.R[0] += Math.abs(Math.sin(lt * 11)) * 40; off.L[0] -= Math.abs(Math.sin(lt * 11)) * 40; break;
+    }
+  }
+  const bob = Math.sin(t * 2.4) * 3 + amp * 4;
+  jy += bob;
+  const sqx = 1 / Math.sqrt(sqy);
+  c.setAttribute('transform', `translate(${+d.x + wx * d.s},${+d.y}) scale(${d.s * d.flip * spin},${d.s})`);
+  // legs
+  let legs = '';
+  for (const s of [-1, 1]) {
+    let lift = 0; if (walkPh !== null) lift = Math.max(0, Math.sin(walkPh + (s > 0 ? Math.PI : 0))) * 34; if (air) lift = Math.max(lift, 22);
+    const hx = s * 22, hy = -205, fx = s * (30 + (air ? 8 : 0)), fy = -6 - lift, kx = s * (26 + lift * .9), ky = (hy + fy) / 2;
+    legs += `<path d="M${hx},${hy} Q${kx},${ky} ${fx},${fy}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round"/><ellipse cx="${fx + s * 10}" cy="${fy - 2}" rx="21" ry="9.5" fill="${INK}"/>`;
+  }
+  // arms
+  let arms = '';
+  for (const [key, side] of [['R', 1], ['L', -1]]) {
+    const a = A0[key], b = A1[key];
+    let hx = a[0] + (b[0] - a[0]) * k + off[key][0], hy = a[1] + (b[1] - a[1]) * k + off[key][1];
+    const g = (key === 'R' ? Math.sin(t * 3.1) : Math.sin(t * 2.7 + 1)) * 5 + amp * 14 * (key === 'R' ? Math.sin(t * 7) : Math.cos(t * 6));
+    hx += g * .6; hy += g;
+    const sx = side * SHX, sy = SHY;
+    const r = ik(sx, sy, hx, hy, side);
+    let ux = r.hx - r.ex, uy = r.hy - r.ey; const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
+    arms += `<path d="M${sx},${sy} Q${(sx + r.ex) / 2 + side * 3},${(sy + r.ey) / 2 + 3} ${r.ex},${r.ey} L${r.hx},${r.hy}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` + hand(r.hx, r.hy, ux, uy, (k > .5 ? b : a)[2]);
+  }
+  const blink = ((t + +d.x * .01) % 3.3) < .11 ? .12 : 1;
+  const lk = LOOK[lookup(P.look, t).cur[1]] || [0, 0];
+  const F = face(ex, t, amp, lk, blink);
+  const pop = 1 + .12 * Math.exp(-(t - exStart) * 10) * (t >= exStart ? 1 : 0);
+  const tie = Math.sin(t * 3) * 3 + (air ? Math.sin(t * 20) * 10 : 0) + (walkPh !== null ? Math.sin(walkPh) * 6 : 0) + rot * .5;
+  const shadowS = 1 - Math.min(.5, jy / 240);
+  const lines = air && jy > 30 ? [-40, 0, 40].map(x => `<path d="M${x},${-jy + 10} L${x},${-jy + 40}" stroke="#9a9a9a" stroke-width="5" stroke-linecap="round"/>`).join('') : '';
+  c.innerHTML = `<ellipse cx="0" cy="2" rx="${125 * shadowS}" ry="${15 * shadowS}" fill="#000" opacity=".09"/>${lines}
+   <g transform="translate(0,${-jy}) rotate(${rot}) scale(${sqx},${sqy})">
+    ${legs}
     <path d="M-44,-388 Q-58,-300 -64,-196 L64,-196 Q58,-300 44,-388 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
     <path d="M-42,-370 Q-54,-290 -58,-200 L-40,-200 Q-38,-300 -30,-372 Z" fill="#e8e8e8"/>
     <path d="M-20,-388 L0,-366 L20,-388" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M-9,-374 L9,-374 L6,-360 L-6,-360 Z M-6,-360 L-14,-270 L0,-250 L14,-270 L6,-360 Z" fill="${BLUE}" stroke="#1d3f66" stroke-width="3.5" stroke-linejoin="round"/>
-    <g class="head" transform="translate(0,-470)">
-      <circle r="86" fill="#fff" stroke="${INK}" stroke-width="5"/>
-      <path d="M-62,10 A62,62 0 0 0 40,60" fill="none" stroke="#e6e6e6" stroke-width="12" stroke-linecap="round"/>
-      <g class="brows"></g><g class="eyes"></g><g class="mouth"></g>
+    <g transform="rotate(${tie},0,-372)"><path d="M-9,-374 L9,-374 L6,-360 L-6,-360 Z M-6,-360 L-14,-270 L0,-250 L14,-270 L6,-360 Z" fill="${BLUE}" stroke="#1d3f66" stroke-width="3.5" stroke-linejoin="round"/></g>
+    <g transform="translate(0,${-470 + nod}) rotate(${hrot}) scale(${pop})">
+      <path d="M-4,-84 C-14,-122 26,-128 20,-102 C16,-88 -2,-94 6,-108" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-22,-82 C-30,-104 -12,-112 -10,-96" stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <circle r="86" fill="${F.tint}" stroke="${INK}" stroke-width="5"/>
+      <path d="M-62,10 A62,62 0 0 0 40,60" fill="none" stroke="#ececec" stroke-width="12" stroke-linecap="round"/>
+      <ellipse cx="-50" cy="20" rx="15" ry="9" fill="#ff9fb0" opacity="${ex === 'happy' || ex === 'excited' || ex === 'wink' || ex === 'angry' ? .8 : .5}"/>
+      <ellipse cx="50" cy="20" rx="15" ry="9" fill="#ff9fb0" opacity="${ex === 'happy' || ex === 'excited' || ex === 'wink' || ex === 'angry' ? .8 : .5}"/>
+      ${F.brows}${F.eyes}${F.mouth}${F.emo}
     </g>
-   </g>
-   <g class="arms"></g>
-  </g>`;
-};
-
+    ${arms}
+   </g>`;
+}
 // ---------- scenes ----------
+
 const HL = (tin, x, y, w, h = 44) => A(tin, 'mark', `<rect x="0" y="${-h / 2}" width="${w}" height="${h}" rx="9" fill="#ffe066" opacity=".9"/>`, { x: x - w / 2, y, sfx: 'marker' });
 const SC = [];
 const scene = (s, e, body) => SC.push({ s, e, body });
@@ -123,7 +267,7 @@ scene(0, 3.18,
   A(0.15, 'pop', bubble(470, 190, txt(0, -12, 'TFSA =', 66) + txt(0, 56, 'Savings Account?', 50, { fill: BLUE })), { x: 380, y: 330 }) +
   A(1.6, 'pop', txt(0, 0, '?', 110, { fill: RED }), { x: 600, y: 200, sfx: 'boing' }) +
   A(2.0, 'pop', txt(0, 0, '?', 80, { fill: RED }), { x: 140, y: 230 }) +
-  character({ x: 300, y: 1170, s: .95, pose: [[0, 'think']], expr: [[0, 'think']] }));
+  character({ x: 300, y: 1170, s: .95, pose: [[0, 'scratch'], [1.6, 'think']], expr: [[0, 'think']], act: [[0, 'hop', .45], [0.2, 'scratch', 1.4], [1.8, 'tilt', 1.2]], look: [[0, 'ur']] }));
 
 // 2. Tax-free savings account... "Galat"
 scene(3.18, 8.82,
@@ -133,7 +277,7 @@ scene(3.18, 8.82,
   A(6.2, 'pop', pill('No tax', GREEN, '#fff', 40), { x: 470, y: 720 }) +
   A(7.55, 'stamp', bigX(80), { x: 470, y: 560, sfx: 'wrong' }) +
   A(7.6, 'stamp', stamp('GALAT!', RED, 64), { x: 470, y: 820 }) +
-  character({ x: 190, y: 1180, s: .72, pose: [[3.18, 'point'], [7.4, 'shrug']], expr: [[3.18, 'smile'], [7.5, 'shock']] }));
+  character({ x: 190, y: 1180, s: .72, pose: [[3.18, 'point'], [6.2, 'thumbs'], [7.5, 'cheeks']], expr: [[3.18, 'smile'], [6.2, 'smug'], [7.55, 'jawdrop']], act: [[3.25, 'hop', .5], [7.5, 'jump', .6], [8.1, 'shake', .7]], look: [[3.18, 'ur']] }));
 
 // 3. Thousands lost
 scene(8.82, 11.40,
@@ -141,7 +285,7 @@ scene(8.82, 11.40,
   A(9.4, 'stamp', txt(0, 0, '−$1,000s', 100, { fill: RED }), { x: 360, y: 290, sfx: 'stamp+lose' }) +
   [[-170, 520, -40, -260], [150, 560, 60, -300], [-60, 640, -110, -330], [210, 700, 130, -260], [40, 470, 20, -320]].map(([x, y, dx, dy], i) =>
     A(9.0 + i * .18, 'fly', `<g transform="rotate(${i * 23 - 30})">${bill()}</g>`, { x: 360 + x * .9, y, attr: `data-dx="${dx}" data-dy="${dy}"`, dur: 2.2 })).join('') +
-  character({ x: 360, y: 1180, s: .82, pose: [[8.82, 'shrug']], expr: [[8.82, 'shock']] }));
+  character({ x: 360, y: 1180, s: .82, pose: [[8.82, 'reach']], expr: [[8.82, 'cry']], act: [[8.85, 'reach', 2.6], [8.9, 'hops', 2.5]], look: [[8.82, 'u']] }));
 
 // 4. TFSA is not a savings account
 scene(11.40, 14.38,
@@ -150,7 +294,7 @@ scene(11.40, 14.38,
   A(12.6, 'stamp', txt(0, 0, '≠', 120, { fill: RED }), { x: 360, y: 480, sfx: 'wrong' }) +
   A(12.9, 'up', txt(0, 0, 'Savings Account', 66), { x: 360, y: 600 }) +
   A(13.1, 'draw', line(150, 0, 570, 0, RED, 9), { y: 582 }) +
-  character({ x: 360, y: 1190, s: .78, pose: [[11.4, 'pointUp']], expr: [[11.4, 'smile']] }));
+  character({ x: 360, y: 1190, s: .78, pose: [[11.4, 'hips'], [12.5, 'wag']], expr: [[11.4, 'think'], [12.5, 'smug']], act: [[11.5, 'shakehead', 1.0], [12.6, 'wag', 1.7]] }));
 
 // 5. It's a container
 const items = [['Cash', iconCash, 16.6], ['GIC', iconGIC, 18.9], ['Stocks', iconStock, 19.9], ['ETF', iconETF, 21.0]];
@@ -161,7 +305,7 @@ scene(14.38, 22.78,
   A(14.9, 'pop', box('TFSA'), { x: 440, y: 1130 }) +
   items.map(([l, ic, t], i) => A(t, 'drop', card(l, ic), { x: 175 + (i % 2) * 190 + 80, y: 380 + Math.floor(i / 2) * 160 })).join('') +
   A(20.5, 'draw', `<path d="M0,0 C30,60 30,120 0,170" stroke="${INK}" stroke-width="5" fill="none" stroke-dasharray="0" pathLength="1"/><path d="M-16,150 L0,172 L18,152" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round" pathLength="1"/>`, { x: 640, y: 560 }) +
-  character({ x: 130, y: 1190, s: .6, pose: [[14.38, 'point']], expr: [[14.38, 'smile']] }));
+  character({ x: 130, y: 1190, s: .6, pose: [[14.38, 'idle'], [15.3, 'present'], [16.5, 'point']], expr: [[14.38, 'smile'], [16.6, 'excited']], act: [[14.38, 'walk', .9, 320], [16.6, 'hop', .45], [18.9, 'hop', .45], [19.9, 'hop', .45], [21.0, 'hop', .45]], look: [[14.38, 'r'], [16.4, 'ur']] }));
 
 // 6. Growth = no tax, withdraw = no tax
 const gains = [['Interest', 23.4], ['Dividend', 25.6], ['Share price', 27.0]];
@@ -172,7 +316,7 @@ scene(22.78, 32.38,
   A(28.2, 'stamp', stamp('TAX = $0', GREEN, 66, -6), { x: 360, y: 680, sfx: 'stamp+ding' }) +
   A(29.6, 'up', `${arrowR(110, INK)}${txt(130, 14, 'Nikalo → No tax', 42, { anchor: 'start' })}`, { x: 120, y: 790 }) +
   A(30.4, 'pop', check(34), { x: 640, y: 780, sfx: 'ding' }) +
-  character({ x: 130, y: 1190, s: .6, pose: [[22.78, 'present'], [28.0, 'thumbs']], expr: [[22.78, 'smile']] }));
+  character({ x: 130, y: 1190, s: .6, pose: [[22.78, 'present'], [28.2, 'cheer'], [30.3, 'thumbs']], expr: [[22.78, 'smile'], [28.2, 'star'], [30.3, 'wink']], act: [[23.4, 'nod', .6], [25.6, 'nod', .6], [27.0, 'nod', .6], [28.2, 'dance', 2.0], [30.4, 'hop', .45]], look: [[22.78, 'ur']] }));
 
 // 7. Limit
 scene(32.38, 34.80,
@@ -180,7 +324,7 @@ scene(32.38, 34.80,
   A(32.9, 'stamp', stamp('LIMIT', RED, 90, -5), { x: 360, y: 330 }) +
   A(32.6, 'pop', box('TFSA'), { x: 440, y: 1000 }) +
   A(33.4, 'pop', warn(1), { x: 450, y: 660, sfx: 'alert' }) +
-  character({ x: 130, y: 1190, s: .6, pose: [[32.38, 'shrug']], expr: [[32.38, 'worry']] }));
+  character({ x: 130, y: 1190, s: .6, pose: [[32.38, 'shrug'], [33.4, 'cheeks']], expr: [[32.38, 'worry'], [33.4, 'scared']], act: [[32.5, 'shakehead', .8], [33.4, 'tremble', 1.4]], look: [[32.38, 'ur']] }));
 
 // 8. 2026 room $7000, carry forward
 scene(34.80, 41.50,
@@ -192,7 +336,7 @@ scene(34.80, 41.50,
   A(38.9, 'up', txt(0, 0, 'Carry forward ho jata hai!', 44, { fill: BLUE }), { x: 360, y: 580 }) +
   ['2024', '2025', '2026'].map((y, i) => A(39.4 + i * .45, 'drop', `<rect x="-90" y="-36" width="180" height="72" rx="10" fill="${['#cfe3f6', '#a9cdef', '#7fb4e6'][i]}" stroke="${INK}" stroke-width="4.5"/>${txt(0, 13, y, 40)}`, { x: 500, y: 960 - i * 82 })).join('') +
   A(40.9, 'draw', `<path d="M0,0 C-60,-40 -60,-140 0,-170" stroke="${INK}" stroke-width="5" fill="none" pathLength="1"/>`, { x: 380, y: 950 }) +
-  character({ x: 160, y: 1190, s: .62, pose: [[34.8, 'point'], [38.3, 'present']], expr: [[34.8, 'smile']] }));
+  character({ x: 160, y: 1190, s: .62, pose: [[34.8, 'point'], [35.9, 'cheer'], [38.3, 'present'], [39.4, 'clap']], expr: [[34.8, 'smile'], [35.9, 'money'], [38.3, 'smile'], [39.4, 'happy']], act: [[35.9, 'jump', .7], [38.4, 'nod', .8], [39.4, 'clap', 1.6]], look: [[34.8, 'ur'], [38.3, 'r']] }));
 
 // 9. Since 2009 -> $109,000
 scene(41.50, 49.34,
@@ -201,7 +345,7 @@ scene(41.50, 49.34,
   A(45.3, 'up', txt(0, 0, 'Total room up to', 48, { fill: '#666' }), { x: 360, y: 560 }) +
   A(45.8, 'count', txt(0, 0, '$109,000', 110, { fill: GREEN, extra: 'data-n="109000" data-pre="$"' }), { x: 360, y: 690 }) +
   A(47.6, 'pop', sparks(150), { x: 360, y: 655, s: 1.5, sfx: 'sparkle' }) +
-  character({ x: 360, y: 1200, s: .62, pose: [[41.5, 'pointUp'], [45.5, 'thumbs']], expr: [[41.5, 'smile'], [45.5, 'happy']] }));
+  character({ x: 360, y: 1200, s: .62, pose: [[41.5, 'pointUp'], [45.8, 'cheer'], [48.2, 'thumbs']], expr: [[41.5, 'smile'], [45.8, 'star'], [48.2, 'excited']], act: [[42.2, 'hop', .5], [45.8, 'hops', 2.3], [48.2, 'spin', .7]], look: [[41.5, 'u']] }));
 
 // 10. Newcomers + CRA My Account
 scene(49.34, 59.0,
@@ -212,7 +356,7 @@ scene(49.34, 59.0,
   A(50.0, 'pop', suitcase(), { x: 120, y: 1185, s: .8 }) +
   A(53.0, 'pop', laptop('CRA My Account', 'TFSA room'), { x: 440, y: 620 }) +
   A(57.0, 'stamp', stamp('Apna hisaab rakho', BLUE, 40, -4), { x: 440, y: 790 }) +
-  character({ x: 250, y: 1190, s: .6, pose: [[49.34, 'hold'], [53, 'point']], expr: [[49.34, 'smile']] }));
+  character({ x: 250, y: 1190, s: .6, pose: [[49.34, 'hold'], [53, 'point'], [57, 'thumbs']], expr: [[49.34, 'smile'], [51.4, 'think'], [53.6, 'happy'], [57, 'wink']], act: [[49.34, 'walk', 1.3, 380], [53.2, 'nod', .7], [57.1, 'hop', .45]], look: [[49.34, 'r'], [53, 'ur']] }));
 
 // 11. Trap: withdraw, re-contribute same year => penalty
 scene(59.0, 71.6,
@@ -228,7 +372,7 @@ scene(59.0, 71.6,
   A(65.0, 'up', txt(0, 0, 'Usi saal wapas daala?', 44), { x: 400, y: 905 }) +
   A(66.6, 'stamp', stamp('OVER-CONTRIBUTION', RED, 40, -5), { x: 410, y: 1000 }) +
   A(69.5, 'pop', pill('1% penalty / month', RED, '#fff', 38), { x: 430, y: 1110, sfx: 'wrong' }) +
-  character({ x: 115, y: 1200, s: .45, pose: [[59, 'shrug'], [66.5, 'shrug']], expr: [[59, 'worry'], [66.5, 'shock']] }));
+  character({ x: 110, y: 1215, s: .52, pose: [[59, 'cheeks'], [62.8, 'idle'], [63.5, 'thumbs'], [65, 'scratch'], [66.6, 'idle'], [69.5, 'facepalm']], expr: [[59, 'scared'], [63.5, 'smile'], [65, 'think'], [66.6, 'dizzy'], [69.5, 'cry']], act: [[59, 'tremble', 1.6], [65, 'scratch', 1.5], [66.6, 'wobble', 2.8], [69.5, 'shake', .7]], look: [[59, 'ur'], [62.8, 'r']] }));
 
 // 12. Biggest mistake: cash
 scene(71.6, 81.54,
@@ -238,7 +382,7 @@ scene(71.6, 81.54,
   A(72.9, 'pop', box('TFSA', 300, 190, [[-80, -230, -14], [10, -238, 8], [90, -228, 16], [-30, -260, -4], [60, -268, 10]].map(([x, y, r]) => `<g transform="translate(${x},${y}) rotate(${r}) scale(.7)">${bill()}</g>`).join('')), { x: 440, y: 760 }) +
   A(75.2, 'up', txt(0, 0, 'Cash ~2% · 20 saal mein', 48), { x: 400, y: 920 }) +
   A(78.0, 'count', txt(0, 0, '≈ $10,400', 96, { fill: '#777', extra: 'data-n="10400" data-pre="≈ $"' }), { x: 420, y: 1040 }) +
-  character({ x: 115, y: 1200, s: .45, pose: [[71.6, 'pointUp'], [77, 'shrug']], expr: [[71.6, 'worry']] }));
+  character({ x: 120, y: 1215, s: .56, pose: [[71.6, 'pointUp'], [72.7, 'hips'], [75.2, 'shrug'], [78, 'facepalm']], expr: [[71.6, 'shock'], [72.7, 'angry'], [75.2, 'sad'], [78, 'cry']], act: [[71.7, 'jump', .5], [72.8, 'stomp', 1.4], [78.1, 'shake', .7]], look: [[71.6, 'ur'], [75.2, 'r']] }));
 
 // 13. Invested 7%
 const chart = (tin) => `
@@ -253,7 +397,7 @@ scene(81.54, 88.24,
   A(81.6, 'up', txt(0, 0, 'Wahi $7,000 invest kiya?', 54), { x: 360, y: 160 }) +
   A(82.4, 'up', txt(0, 0, '7% · 20 saal', 46, { fill: BLUE }), { x: 360, y: 225 }) +
   `<g transform="translate(0,950)">${chart(81.8)}</g>` +
-  character({ x: 620, y: 1230, s: .38, pose: [[81.54, 'pointL']], expr: [[81.54, 'happy']] }));
+  character({ x: 625, y: 1235, s: .44, pose: [[81.54, 'pointL'], [85.5, 'cheer']], expr: [[81.54, 'smile'], [83.5, 'excited'], [85.5, 'money']], act: [[85.5, 'hops', 2.6]], look: [[81.54, 'ul']] }));
 
 // 14. Difference
 scene(88.24, 94.58,
@@ -262,7 +406,7 @@ scene(88.24, 94.58,
   A(90.9, 'pop', `${check(30)}${txt(50, 14, 'Dabba sahi tha', 48, { anchor: 'start' })}`, { x: 110, y: 480, sfx: 'ding' }) +
   A(92.4, 'pop', `<g transform="scale(.45)">${bigX(60)}</g>${txt(50, 14, 'Andar ka saaman galat', 48, { anchor: 'start' })}`, { x: 90, y: 580, sfx: 'wrong' }) +
   A(89.0, 'pop', coins(6), { x: 560, y: 1150 }) + A(89.3, 'pop', coins(4), { x: 640, y: 1170 }) +
-  character({ x: 300, y: 1200, s: .68, pose: [[88.24, 'hips'], [92.2, 'shrug']], expr: [[88.24, 'shock'], [90.8, 'worry']] }));
+  character({ x: 300, y: 1200, s: .68, pose: [[88.24, 'cheeks'], [90.9, 'thumbs'], [92.4, 'shrug']], expr: [[88.24, 'jawdrop'], [90.9, 'happy'], [92.4, 'sad']], act: [[88.3, 'jump', .6], [88.9, 'shake', 1.2], [90.9, 'nod', .7], [92.4, 'shakehead', 1.2]], look: [[88.24, 'u']] }));
 
 // 15. What to do — checklist
 const steps = [['Room check karo', 95.9], ['TFSA kholo', 97.8], ['Diversified, low-cost', 99.6, 'investments rakho'], ['Daily kharche ka', 102.6, 'cash yahan nahi']];
@@ -271,7 +415,7 @@ scene(94.58, 105.5,
   A(94.9, 'pop', `<rect x="-300" y="-30" width="600" height="${4 * 150 + 40}" rx="18" fill="#fff" stroke="${INK}" stroke-width="5"/><rect x="-80" y="-56" width="160" height="50" rx="12" fill="#bbb" stroke="${INK}" stroke-width="5"/>`, { x: 360, y: 260 }) +
   steps.map(([a, t, b], i) => A(t, 'up', `<rect x="-22" y="-22" width="44" height="44" rx="8" fill="#fff" stroke="${INK}" stroke-width="4.5"/>${A(t + .5, 'draw', check(20, i === 3 ? RED : GREEN), { sfx: i === 3 ? 'none' : 'ding' })}${txt(44, b ? -2 : 14, a, 42, { anchor: 'start' })}${b ? txt(44, 44, b, 42, { anchor: 'start' }) : ''}`, { x: 110, y: 320 + i * 150 })).join('') +
   A(102.6, 'pop', `<g transform="scale(.3)">${bigX(60)}</g>`, { x: 110, y: 770, sfx: 'wrong' }) +
-  character({ x: 600, y: 1230, s: .42, pose: [[94.58, 'pointL']], expr: [[94.58, 'smile']] }));
+  character({ x: 610, y: 1235, s: .48, pose: [[94.58, 'scratch'], [95.8, 'pointL'], [102.6, 'wag'], [103.8, 'thumbs']], expr: [[94.58, 'think'], [95.8, 'smile'], [102.6, 'angry'], [103.8, 'wink']], act: [[94.6, 'scratch', 1.1], [96.0, 'nod', .5], [97.9, 'nod', .5], [99.7, 'nod', .5], [102.6, 'wag', 1.2], [103.8, 'hop', .45]], look: [[94.58, 'u'], [95.8, 'l']] }));
 
 // 16. Disclaimer + next video
 scene(105.5, 110.84,
@@ -282,14 +426,14 @@ scene(105.5, 110.84,
   A(107.9, 'pop', doc('PAYCHECK'), { x: 470, y: 620 }) +
   A(109.0, 'up', txt(0, 0, 'Tax kahan se', 46, { anchor: 'start' }), { x: 330, y: 860 }) +
   A(109.4, 'up', txt(0, 0, 'katta hai?', 46, { anchor: 'start', fill: RED }), { x: 330, y: 915 }) +
-  character({ x: 180, y: 1200, s: .58, pose: [[105.5, 'idle'], [107.6, 'point']], expr: [[105.5, 'smile']] }));
+  character({ x: 180, y: 1200, s: .58, pose: [[105.5, 'hips'], [107.4, 'guns'], [109, 'scratch']], expr: [[105.5, 'smile'], [105.9, 'smug'], [107.4, 'excited'], [109, 'think']], act: [[105.6, 'nod', .7], [107.4, 'hop', .45], [109, 'scratch', 1.6]], look: [[105.5, 'c'], [107.4, 'ur']] }));
 
 // 17. Follow
 scene(110.84, 999,
   A(110.9, 'pop', bell(), { x: 520, y: 330, s: 1.3, sfx: 'bell' }) +
   A(111.3, 'stamp', pill('FOLLOW', RED, '#fff', 74, 46), { x: 360, y: 600 }) +
   A(111.9, 'pop', sparks(150), { x: 360, y: 585, s: 1.6, sfx: 'sparkle' }) +
-  character({ x: 360, y: 1200, s: .72, pose: [[110.84, 'thumbs']], expr: [[110.84, 'happy']] }));
+  character({ x: 360, y: 1200, s: .72, pose: [[110.84, 'wave'], [112.5, 'thumbs']], expr: [[110.84, 'happy'], [111.3, 'excited'], [112.5, 'wink']], act: [[110.84, 'wave', 1.6], [111.3, 'hop', .45], [112.5, 'spin', .6]] }));
 
 // ---------- build ----------
 const root = document.getElementById('root');
@@ -329,58 +473,6 @@ function animEl(el, t) {
 }
 
 function lookup(tl, t) { let cur = tl[0], prev = tl[0]; for (const k of tl) { if (t >= k[0]) { prev = cur; cur = k; } } return { cur, prev }; }
-function armPath(sx, sy, a1, a2, side, L1 = 88, L2 = 84) {
-  const r = d => d * Math.PI / 180;
-  const ex = sx + side * Math.sin(r(a1)) * L1, ey = sy + Math.cos(r(a1)) * L1;
-  const hx = ex + side * Math.sin(r(a2)) * L2, hy = ey + Math.cos(r(a2)) * L2;
-  return { d: `M${sx},${sy} Q${(sx + ex) / 2 + side * 4},${(sy + ey) / 2} ${ex},${ey} L${hx},${hy}`, hx, hy, a2 };
-}
-function drawChar(c, t, amp) {
-  const d = c.dataset;
-  const poseTL = JSON.parse(d.pose), exprTL = JSON.parse(d.expr);
-  const { cur, prev } = lookup(poseTL, t);
-  const k = cur === prev ? 1 : eOut(clamp((t - cur[0]) / .3));
-  const P = POSES[cur[1]], Q = POSES[prev[1]];
-  const bob = Math.sin(t * 2.4) * 3 + amp * 3;
-  c.setAttribute('transform', `translate(${d.x},${+d.y}) scale(${d.s * d.flip},${d.s})`);
-  c.querySelector('.body').setAttribute('transform', `translate(0,${-bob})`);
-  c.querySelector('.head').setAttribute('transform', `translate(0,-470) rotate(${Math.sin(t * 1.7) * 3 + amp * 4 * Math.sin(t * 9)})`);
-  let arms = '';
-  for (const [side, key, sx] of [[1, 'R', 46], [-1, 'L', -46]]) {
-    const wob = (key === 'R' ? Math.sin(t * 3.1) : Math.sin(t * 2.7 + 1)) * 4 * (1 + amp * 2.5);
-    const a1 = Q[key][0] + (P[key][0] - Q[key][0]) * k + wob, a2 = Q[key][1] + (P[key][1] - Q[key][1]) * k + wob;
-    const ap = armPath(sx, -372 - bob, a1, a2, side);
-    arms += `<path d="${ap.d}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
-    const pn = cur[1];
-    const fx = ap.hx + side * Math.sin(ap.a2 * Math.PI / 180) * 18, fy = ap.hy + Math.cos(ap.a2 * Math.PI / 180) * 18;
-    if (key === 'R' && (pn === 'point' || pn === 'pointUp') || key === 'L' && pn === 'pointL')
-      arms += `<path d="M${ap.hx},${ap.hy} L${fx},${fy}" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>`;
-    if (key === 'R' && pn === 'thumbs')
-      arms += `<path d="M${ap.hx},${ap.hy} L${ap.hx},${ap.hy - 26}" stroke="${INK}" stroke-width="9" stroke-linecap="round"/>`;
-    arms += `<circle cx="${ap.hx}" cy="${ap.hy}" r="13" fill="${INK}"/>`;
-  }
-  c.querySelector('.arms').innerHTML = arms;
-  const ex = lookup(exprTL, t).cur[1];
-  const blink = (t % 3.4) < .12 ? .12 : 1;
-  const eyeY = -10, ery = (ex === 'shock' ? 13 : 10) * blink;
-  c.querySelector('.eyes').innerHTML = ex === 'happy' && blink === 1
-    ? `<path d="M-38,${eyeY + 4} q10,-14 20,0 M18,${eyeY + 4} q10,-14 20,0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`
-    : `<ellipse cx="-28" cy="${eyeY}" rx="${ex === 'shock' ? 8 : 6.5}" ry="${ery}" fill="${INK}"/><ellipse cx="28" cy="${eyeY}" rx="${ex === 'shock' ? 8 : 6.5}" ry="${ery}" fill="${INK}"/>`;
-  const browY = ex === 'shock' ? -46 : -36;
-  c.querySelector('.brows').innerHTML =
-    ex === 'worry' ? `<path d="M-44,-30 L-16,-40 M16,-40 L44,-30" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>`
-    : ex === 'think' ? `<path d="M-42,-36 q12,-10 26,-4 M16,-46 q14,-8 28,2" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`
-    : `<path d="M-42,${browY} q13,-10 26,-2 M16,${browY - 2} q13,-8 26,2" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
-  const my = 36; let m;
-  if (ex === 'shock') m = `<ellipse cx="0" cy="${my + 2}" rx="${10 + amp * 5}" ry="${12 + amp * 9}" fill="${INK}"/>`;
-  else if (amp < .1) m = ex === 'worry' ? `<path d="M-18,${my + 6} q18,-10 36,0" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`
-    : ex === 'think' ? `<path d="M-14,${my + 2} L16,${my - 2}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>`
-    : `<path d="M-26,${my - 4} Q0,${my + 18} 26,${my - 4}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
-  else { const o = 6 + amp * 20, w = ex === 'worry' || ex === 'think' ? 16 : 26;
-    m = `<path d="M${-w},${my - 4} Q0,${my - 4 + o * 2} ${w},${my - 4} Q0,${my} ${-w},${my - 4} Z" fill="#2b2b2b" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>${w > 20 ? `<path d="M${-w + 6},${my - 3} Q0,${my + 2} ${w - 6},${my - 3}" stroke="#fff" stroke-width="4" fill="none"/>` : ''}`; }
-  c.querySelector('.mouth').innerHTML = m;
-}
-
 const TR = 0.3;
 const STAMPS = [...document.querySelectorAll('.an[data-a="stamp"]')].map(e => +e.dataset.in);
 window.render = function (t) {
@@ -406,6 +498,10 @@ window.render = function (t) {
     for (const c of sc.chars) drawChar(c, t, amp);
   });
 };
-window.cues = () => [...document.querySelectorAll('.an')].map(e => ({ t: +e.dataset.in, a: e.dataset.a, sfx: e.dataset.sfx || '', dur: +(e.dataset.dur || DUR[e.dataset.a]), money: !!e.querySelector('text[data-pre]') })).concat(scenes.slice(1).map(sc => ({ t: sc.s, a: 'scene', sfx: '', dur: TR })));
+window.cues = () => [...document.querySelectorAll('.an')].map(e => ({ t: +e.dataset.in, a: e.dataset.a, sfx: e.dataset.sfx || '', dur: +(e.dataset.dur || DUR[e.dataset.a]), money: !!e.querySelector('text[data-pre]') })).concat(scenes.slice(1).map(sc => ({ t: sc.s, a: 'scene', sfx: '', dur: TR })))
+  .concat([...document.querySelectorAll('.char')].flatMap(c => { const sc = scenes.find(s => s.el.contains(c));
+    const ok = t => t >= sc.s && t < sc.e;
+    return JSON.parse(c.dataset.act).filter(a => ok(a[0])).map(([t, n, d]) => ({ t, a: 'act', sfx: n, dur: d || .5 }))
+      .concat(JSON.parse(c.dataset.expr).filter(e => ok(e[0]) && e[0] > sc.s + .05).map(([t, n]) => ({ t, a: 'expr', sfx: n, dur: 0 }))); }));
 render(0);
 </script></body></html>
