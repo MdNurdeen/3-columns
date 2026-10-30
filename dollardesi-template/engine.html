@@ -110,7 +110,7 @@ const HP = { // hand targets [x, y, handShape], character space (feet = 0,0)
 const LOOK = { c: [0, 0], r: [7, 0], l: [-7, 0], u: [0, -6], ur: [6, -5], ul: [-6, -5], d: [0, 5], dl: [-6, 4], dr: [6, 4] };
 let charId = 0;
 const character = (o) => `<g class="char" id="c${charId++}" data-x="${o.x}" data-y="${o.y}" data-s="${o.s || 1}" data-flip="${o.flip ? -1 : 1}"
-  data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-act='${JSON.stringify(o.act || [])}' data-look='${JSON.stringify(o.look || [[0, 'c']])}' data-tie="${o.tie || BLUE}" data-outfit="${o.outfit || (o.tie ? 'shirt' : 'hoodie')}" data-acc="${o.acc || ''}" data-from="${o.from ?? -1}"></g>`;
+  data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-act='${JSON.stringify(o.act || [])}' data-look='${JSON.stringify(o.look || [[0, 'c']])}' data-tie="${o.tie || BLUE}" data-outfit="${o.outfit || 'shirt'}" data-acc="${o.acc || ''}" data-from="${o.from ?? -1}"></g>`;
 
 function ik(sx, sy, hx, hy, side) {
   let dx = hx - sx, dy = hy - sy, d = Math.hypot(dx, dy); const mx = L1 + L2 - 1;
