@@ -1,0 +1,13 @@
+{
+  "voice": "voice.mp3",
+  "music": "music.mp3",
+  "voice_id": "pNInz6obpgDQGcFmaJgB",
+  "style": { "highlight": "FF2A2A", "font_size": 110, "caption_y": 0.5, "music_volume": 0.12 },
+  "scenes": [
+    { "image": "01.png", "text": "In 1932, Australia declared war. Not on a country, but on birds." },
+    { "image": "02.png", "text": "Twenty thousand emus had invaded the wheat fields of Western Australia, eating everything in sight." },
+    { "image": "03.png", "text": "So the army sent Major Meredith, two soldiers, and two machine guns." },
+    { "image": "04.png", "text": "But the emus scattered into small groups and ran faster than the trucks could follow." },
+    { "image": "05.png", "text": "After a month and thousands of bullets, the army gave up. The emus had won." }
+  ]
+}
