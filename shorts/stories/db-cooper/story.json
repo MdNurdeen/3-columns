@@ -1,0 +1,86 @@
+{
+  "title": "D.B. Cooper",
+  "voice": "voice.mp3",
+  "music": "music.mp3",
+  "style": {
+    "captions": "pop",
+    "grade": "dark",
+    "music_volume": 0.1,
+    "art": "dark cinematic semi-realistic illustration, 1971 period detail, moody low-key lighting, muted desaturated colours, light film grain"
+  },
+  "characters": {
+    "cooper": {
+      "name": "Dan Cooper (FBI composite)",
+      "look": "man in his mid-40s, about 5'10\" to 6', olive complexion, brown eyes, short black hair, dark business suit, white shirt, thin black clip-on tie with pearl tie pin, dark raincoat, dark sunglasses",
+      "reference": "refs/cooper_fbi_sketch.jpg"
+    },
+    "schaffner": {
+      "name": "Florence Schaffner",
+      "look": "23-year-old flight attendant in a 1971 Northwest Orient uniform",
+      "reference": "refs/schaffner.jpg"
+    },
+    "ingram": {
+      "name": "Brian Ingram",
+      "look": "8-year-old boy in 1980 casual clothes",
+      "reference": "refs/ingram.jpg"
+    }
+  },
+  "scenes": [
+    {
+      "image": "01.png",
+      "text": "On November 24th, 1971, a quiet man in a dark suit bought a one-way plane ticket under the name Dan Cooper.",
+      "shot": "Portland airport ticket counter at night in 1971, the man paying cash, rain on the windows",
+      "characters": ["cooper"],
+      "motion": "slow push-in, man slides cash across the counter, rain streaks on glass"
+    },
+    {
+      "image": "02.png",
+      "text": "Shortly after takeoff, he handed the flight attendant a note. It said he had a bomb.",
+      "shot": "inside a 1971 Boeing 727 cabin, the man seated in the last row handing a folded note to a flight attendant",
+      "characters": ["cooper", "schaffner"],
+      "motion": "note passes between hands, attendant's expression turns to fear"
+    },
+    {
+      "media": "03.mp4",
+      "text": "He opened his briefcase. Inside were wires and red sticks.",
+      "shot": "close-up of an open briefcase on a lap showing wires and red cylinders, dim cabin light",
+      "characters": ["cooper"],
+      "motion": "briefcase lid slowly opens, camera tilts down into it"
+    },
+    {
+      "image": "04.png",
+      "text": "His demands were simple. Two hundred thousand dollars and four parachutes.",
+      "shot": "the man writing on a napkin with sunglasses on, calm expression, cigarette smoke",
+      "characters": ["cooper"],
+      "motion": "smoke drifts, subtle head turn toward camera"
+    },
+    {
+      "image": "05.png",
+      "text": "In Seattle, the FBI delivered the money. Cooper let all thirty-six passengers go.",
+      "shot": "rainy night tarmac at Seattle airport, a 727 with its rear stairs down, passengers walking away under floodlights",
+      "characters": [],
+      "motion": "passengers walk off, rain falls through floodlights"
+    },
+    {
+      "image": "06.png",
+      "text": "Then, somewhere over the forests of Washington, in the dark and the rain, he lowered the rear stairs and jumped.",
+      "shot": "a man with a parachute pack standing on the lowered rear airstair of a 727 in flight at night, storm clouds, forest far below",
+      "characters": ["cooper"],
+      "motion": "wind whips his tie and coat, he steps off into darkness"
+    },
+    {
+      "image": "07.png",
+      "text": "He was never seen again. Nine years later, a boy playing on the banks of the Columbia River dug up five thousand eight hundred dollars of the ransom.",
+      "shot": "a boy kneeling on a sandy riverbank uncovering decayed bundles of 20 dollar bills, overcast sky",
+      "characters": ["ingram"],
+      "motion": "boy brushes sand off the money bundles"
+    },
+    {
+      "image": "08.png",
+      "text": "To this day, nobody knows who Dan Cooper really was.",
+      "shot": "the FBI composite sketch of the man pinned to a corkboard among case files and maps, single desk lamp",
+      "characters": ["cooper"],
+      "motion": "slow push-in on the sketch"
+    }
+  ]
+}
