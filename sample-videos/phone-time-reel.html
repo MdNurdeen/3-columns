@@ -1,0 +1,100 @@
+<!doctype html><meta charset=utf-8>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#ecebe6;font-family:Inter;color:#111}
+.s{position:absolute;inset:0;padding:90px 70px;opacity:0}
+.c{border-radius:48px;padding:50px;position:relative;overflow:hidden}
+.k{font-size:30px;font-weight:700;letter-spacing:4px;opacity:.6}
+.big{font-weight:900;letter-spacing:-8px;line-height:1}
+.hd{position:absolute;left:70px;right:70px;top:60px;display:flex;justify-content:space-between;font-size:30px;font-weight:700;z-index:5}
+.prog{position:absolute;left:70px;right:70px;top:120px;height:8px;border-radius:4px;background:rgba(0,0,0,.1);z-index:5}
+.prog i{display:block;height:100%;border-radius:4px;background:#111}
+/* scene 1 */
+#s1 h1{font-size:150px;font-weight:900;line-height:140px;letter-spacing:-7px;margin-top:330px}
+#s1 h1 span{display:inline-block}
+.phone{position:absolute;right:110px;top:1180px;width:330px;height:620px;border-radius:60px;background:#111;padding:20px}
+.phone div{width:100%;height:100%;border-radius:42px;background:linear-gradient(160deg,#c6f432,#b8b2ff 60%,#ff5c39)}
+.chip{position:absolute;left:70px;top:1300px;font-size:40px;font-weight:700;background:#fff;padding:24px 40px;border-radius:60px}
+/* scene 2 */
+#s2 .c{position:absolute;left:70px;right:70px;top:420px;height:900px;background:#c6f432}
+#s2 .big{font-size:300px;margin-top:200px}
+#s2 .l{font-size:56px;font-weight:700;margin-top:30px}
+.clock{position:absolute;right:50px;top:40px;width:160px;height:160px;border-radius:50%;border:12px solid #111}
+.clock i{position:absolute;left:50%;top:50%;width:10px;height:62px;margin-left:-5px;background:#111;border-radius:5px;transform-origin:50% 0}
+#s2 .sub{position:absolute;left:70px;right:70px;top:1380px;font-size:46px;font-weight:700;background:#fff;border-radius:40px;padding:40px 50px}
+/* scene 3 */
+#s3 h2{font-size:90px;font-weight:900;letter-spacing:-3px;line-height:92px;margin-top:20px}
+.row{margin-top:46px}
+.row .t{display:flex;justify-content:space-between;font-size:44px;font-weight:800;margin-bottom:16px}
+.row .bar{height:96px;border-radius:30px;background:#fff;overflow:hidden}
+.row .bar i{display:block;height:100%;border-radius:30px}
+/* scene 4 */
+#s4 .g{display:grid;grid-template-columns:1fr;gap:34px;margin-top:180px}
+#s4 .c{height:640px}
+#s4 .big{font-size:300px}
+#s4 .l{font-size:54px;font-weight:700;margin-top:20px}
+.mute{position:absolute;right:50px;top:50px;font-size:120px}
+/* scene 5 */
+#s5 .g{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:520px 360px 360px 300px;gap:28px;margin-top:100px}
+#s5 .c{padding:40px}
+#s5 .n{font-size:130px;font-weight:900;letter-spacing:-6px;line-height:1}
+#s5 .l{font-size:32px;font-weight:700;margin-top:14px;opacity:.75}
+.note{position:absolute;left:0;right:0;bottom:40px;text-align:center;font-size:24px;opacity:.45;z-index:5}
+</style>
+<div class="hd"><span>@yourhandle</span><span id="pg">1/5</span></div><div class="prog"><i id="pb"></i></div>
+
+<div class="s" id="s1"><div class="k" style="margin-top:220px">2026 REPORT</div>
+<h1><span>How</span> <span>people</span> <span>spend</span> <span>their</span> <span style="color:#ff5c39">phone</span> <span style="color:#ff5c39">time</span></h1>
+<div class="chip">📱 watch till the end</div><div class="phone"><div></div></div></div>
+
+<div class="s" id="s2"><div class="c"><div class="k">AVERAGE DAILY SCREEN TIME</div><div class="clock"><i id="h1"></i></div>
+<div class="big" id="n1">0.0h</div><div class="l">every single day</div></div>
+<div class="sub" id="sub2">That's about <b id="n1b">0</b> days a year 😳</div></div>
+
+<div class="s" id="s3"><div class="k" style="margin-top:130px">WHERE IT GOES</div><h2>Most of it is<br>scrolling.</h2>
+<div id="rows"></div></div>
+
+<div class="s" id="s4"><div class="g">
+<div class="c" id="c41" style="background:#ff5c39;color:#fff"><div class="mute">🔇</div><div class="big" id="n2">0%</div><div class="l">watch videos with<br>sound off</div></div>
+<div class="c" id="c42" style="background:#b8b2ff"><div class="mute">⏱️</div><div class="big" id="n3">0s</div><div class="l">is all you get to<br>hook a viewer</div></div></div></div>
+
+<div class="s" id="s5"><div class="g">
+<div class="c" style="grid-column:1/3;background:#111;color:#fff"><div class="k" style="color:#fff">THE TAKEAWAY</div><div style="font-size:96px;font-weight:900;letter-spacing:-4px;line-height:100px;margin-top:30px">Hook fast.<br>Add captions.<br>Keep it short.</div></div>
+<div class="c" style="background:#c6f432"><div class="n">4.6h</div><div class="l">daily screen time</div></div>
+<div class="c" style="background:#ff5c39;color:#fff"><div class="n">72%</div><div class="l">sound off</div></div>
+<div class="c" style="background:#b8b2ff"><div class="n">3s</div><div class="l">to hook</div></div>
+<div class="c" style="background:#fff"><div class="n">38%</div><div class="l">social media</div></div>
+<div class="c" style="grid-column:1/3;background:#fff;display:flex;align-items:center;justify-content:space-between;font-size:52px;font-weight:900">Save this 🔖<span style="background:#111;color:#fff;padding:20px 40px;border-radius:50px;font-size:40px">Follow for more</span></div>
+</div></div>
+<div class="note">Sample data for demonstration only</div>
+
+<script>
+const cats=[['Social media',38,'#ff5c39'],['Video & streaming',24,'#111'],['Messaging',14,'#b8b2ff'],['Games',10,'#c6f432'],['Everything else',14,'#9a9a94']];
+document.getElementById('rows').innerHTML=cats.map(([n,v,c])=>`<div class="row"><div class="t"><span>${n}</span><span class="v">0%</span></div><div class="bar"><i style="width:0;background:${c}"></i></div></div>`).join('');
+const $=id=>document.getElementById(id);
+const cl=x=>Math.max(0,Math.min(1,x));
+const eo=x=>1-Math.pow(1-cl(x),3);
+const back=x=>{x=cl(x);const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const scenes=[[0,3],[3,6.2],[6.2,10],[10,12.6],[12.6,15]];
+function inout(s,t){const [a,b]=scenes[s];const i=eo((t-a)/.35), o=s==4?1:1-eo((t-(b-.3))/.3);return t<a||t>b?0:Math.min(i,o)}
+window.render=t=>{
+  scenes.forEach((_,i)=>{const e=$('s'+(i+1)),v=inout(i,t);e.style.opacity=v;e.style.transform=`translateY(${(1-v)*60}px)`});
+  const cur=scenes.findIndex(([a,b])=>t>=a&&t<b);$('pg').textContent=`${(cur<0?4:cur)+1}/5`;$('pb').style.width=(t/15*100)+'%';
+  // s1
+  [...document.querySelectorAll('#s1 h1 span')].forEach((s,i)=>{const p=back((t-.15-i*.12)/.45);s.style.transform=`translateY(${(1-p)*120}px) scale(${.6+.4*p})`;s.style.opacity=cl((t-.15-i*.12)/.2)});
+  const ph=back((t-.9)/.6);document.querySelector('.phone').style.transform=`translateY(${(1-ph)*500}px) rotate(${8-8*ph+Math.sin(t*2)*3}deg)`;
+  document.querySelector('.chip').style.transform=`scale(${back((t-1.3)/.4)})`;
+  // s2
+  const p2=eo((t-3.3)/1.6);$('n1').textContent=(4.6*p2).toFixed(1)+'h';$('h1').style.transform=`rotate(${180+p2*4.6*30}deg)`;
+  $('n1b').textContent=Math.round(70*p2);$('sub2').style.transform=`scale(${back((t-4.6)/.4)})`;
+  // s3
+  document.querySelectorAll('#rows .row').forEach((r,i)=>{const p=eo((t-7-i*.35)/.9);r.querySelector('i').style.width=(cats[i][1]/38*100*p)+'%';r.querySelector('.v').textContent=Math.round(cats[i][1]*p)+'%';r.style.opacity=cl((t-6.8-i*.35)/.3)});
+  // s4
+  const a=back((t-10.2)/.5),b=back((t-10.7)/.5);$('c41').style.transform=`scale(${a})`;$('c42').style.transform=`scale(${b})`;
+  $('n2').textContent=Math.round(72*eo((t-10.3)/1))+'%';$('n3').textContent=Math.round(3*eo((t-10.8)/.8))+'s';
+  // s5
+  document.querySelectorAll('#s5 .c').forEach((c,i)=>{const p=back((t-12.8-i*.12)/.45);c.style.transform=`scale(${p})`;c.style.opacity=cl((t-12.8-i*.12)/.15)});
+};
+render(0);
+</script>
