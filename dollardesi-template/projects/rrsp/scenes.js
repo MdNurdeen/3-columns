@@ -9,8 +9,6 @@ const CFG = {
     { label: 'income needed to max RRSP', expr: '35390 / 0.18', expect: 196600, tol: 50 },
   ],
 };
-const house = () => `<path d="M-120,0 V-130 L0,-215 L120,-130 V0 Z" fill="#fff4dc" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M-140,-120 L0,-235 L140,-120" fill="none" stroke="${RED}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="-28" y="-80" width="56" height="80" fill="${BLUE}" stroke="${INK}" stroke-width="4"/><rect x="50" y="-110" width="44" height="40" fill="#cfe8ff" stroke="${INK}" stroke-width="4"/><rect x="-94" y="-110" width="44" height="40" fill="#cfe8ff" stroke="${INK}" stroke-width="4"/>`;
-const shareIcon = () => `<circle r="60" fill="${GREEN}" stroke="${INK}" stroke-width="5"/><path d="M-22,10 L18,-14 M-22,10 L18,30" stroke="#fff" stroke-width="7"/><circle cx="-22" cy="10" r="11" fill="#fff"/><circle cx="20" cy="-16" r="11" fill="#fff"/><circle cx="20" cy="32" r="11" fill="#fff"/>`;
 const minus = (s, c = INK) => txt(0, 0, s, 50, { fill: c });
 
 // 1. Hook: room can be zero in year 1

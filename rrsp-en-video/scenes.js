@@ -12,11 +12,6 @@ const CFG = {
     { label: 'income needed to max RRSP', expr: '35390 / 0.18', expect: 196600, tol: 50 },
   ],
 };
-// speech bubble with a tail pointing down toward the speaker (tail: -1 left, 1 right)
-const say = (w, h, body, tail = -1) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="26" fill="#fff" stroke="${INK}" stroke-width="5"/><path d="M${tail * w * .18 - 22},${h / 2 - 3} L${tail * w * .34},${h / 2 + 46} L${tail * w * .18 + 22},${h / 2 - 3}" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><rect x="${tail * w * .18 - 20}" y="${h / 2 - 8}" width="40" height="10" fill="#fff"/>${body}`;
-const house = () => `<path d="M-120,0 V-130 L0,-215 L120,-130 V0 Z" fill="#fff4dc" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M-140,-120 L0,-235 L140,-120" fill="none" stroke="${RED}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><rect x="-28" y="-80" width="56" height="80" fill="${BLUE}" stroke="${INK}" stroke-width="4"/><rect x="50" y="-110" width="44" height="40" fill="#cfe8ff" stroke="${INK}" stroke-width="4"/><rect x="-94" y="-110" width="44" height="40" fill="#cfe8ff" stroke="${INK}" stroke-width="4"/>`;
-const shareIcon = () => `<circle r="60" fill="${GREEN}" stroke="${INK}" stroke-width="5"/><path d="M-22,10 L18,-14 M-22,10 L18,30" stroke="#fff" stroke-width="7"/><circle cx="-22" cy="10" r="11" fill="#fff"/><circle cx="20" cy="-16" r="11" fill="#fff"/><circle cx="20" cy="32" r="11" fill="#fff"/>`;
-const nameTag = (s, c = BLUE) => `<rect x="-70" y="-24" width="140" height="48" rx="24" fill="${c}" stroke="${INK}" stroke-width="4"/>${txt(0, 12, s, 34, { fill: '#fff' })}`;
 const FR = { tie: GREEN, acc: 'glasses' };
 
 // 1. Meet Alex: 3 months in Canada, puts $3,000 in RRSP
