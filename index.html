@@ -1,172 +1,668 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- displays site properly based on user's device -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@100..900&family=Fraunces:opsz,wght@9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lexend+Deca:wght@100..900&family=Outfit:wght@100..900&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap"
-    rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@100..900&family=Fraunces:opsz,wght@9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap"
-    rel="stylesheet">
-  <title>Frontend Mentor | 3-column preview card component</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sketch Explainer Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Layout: sticky 9:16 preview on the left, a column of edit panels on the right; stacks on phones. */
+  :root {
+    --paper: #F4F2EC;
+    --surface: #FFFFFF;
+    --ink: #1F1D1A;
+    --muted: #6B665E;
+    --line: #DCD7CC;
+    --mustard: #E7A93A;
+    --mustard-ink: #2A2117;
+    --oxblood: #8E2132;
+    --focus: #8E2132;
+    --display: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+    --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #161513; --surface: #201E1B; --ink: #EDE9E1; --muted: #A49E93;
+      --line: #36322C; --mustard: #E7A93A; --mustard-ink: #2A2117; --oxblood: #E08593; --focus: #E7A93A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #161513; --surface: #201E1B; --ink: #EDE9E1; --muted: #A49E93;
+    --line: #36322C; --mustard: #E7A93A; --mustard-ink: #2A2117; --oxblood: #E08593; --focus: #E7A93A;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+  header { display: flex; flex-direction: column; gap: 6px; }
+  .tag { align-self: flex-start; background: var(--mustard); color: var(--mustard-ink); font-family: var(--display); font-style: italic; font-size: 13px; padding: 2px 10px; }
+  h1 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+  h1 em { color: var(--oxblood); }
+  header p { margin: 0; color: var(--muted); max-width: 62ch; }
 
-  <!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: hsl(0, 0%, 95%);
-      height: 100vh;
-    }
+  .app { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
+  @media (min-width: 900px) {
+    .app { grid-template-columns: minmax(0, 400px) minmax(0, 1fr); }
+    .preview { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+  }
+  .preview { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .stage { width: min(100%, calc(70vh * 9 / 16)); margin: 0 auto; box-shadow: 0 1px 0 var(--line), 0 12px 32px rgba(0,0,0,.12); background: #F8F6F1; }
+  .stage canvas { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; max-width: 100%; }
+  .transport { display: flex; align-items: center; gap: 10px; }
+  .transport input[type=range] { flex: 1; min-width: 0; accent-color: var(--oxblood); }
+  .time { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+  .exports { display: flex; flex-wrap: wrap; gap: 8px; }
+  .status { font-size: 13px; color: var(--muted); min-height: 1.5em; margin: 0; }
 
-    section {
-      width: 800px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      border-radius: 10px;
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-    }
+  button, .btn {
+    font: 500 14px/1 var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+    padding: 10px 14px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  button:hover, .btn:hover { border-color: var(--muted); }
+  button:focus-visible, .btn:focus-within, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  button.primary { background: var(--mustard); color: var(--mustard-ink); border-color: var(--mustard); font-weight: 600; }
+  button.primary:hover { filter: brightness(1.05); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.icon { padding: 8px 10px; }
+  .btn input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .play { width: 44px; height: 44px; justify-content: center; padding: 0; border-radius: 50%; background: var(--ink); color: var(--paper); border-color: var(--ink); font-size: 15px; }
 
-    section>div {
-      padding: 50px;
-    }
+  .panels { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .panel h2 { font-family: var(--display); font-weight: 400; font-size: 21px; margin: 0; }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .hint { font-size: 13px; color: var(--muted); margin: 0; }
+  .hint code { font-family: var(--mono); font-size: 12px; background: var(--paper); padding: 1px 4px; border-radius: 3px; }
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  label.f { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); min-width: 0; }
+  input[type=text], input[type=number], textarea {
+    font: 400 15px/1.4 var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; width: 100%; min-width: 0;
+    text-transform: none; letter-spacing: 0;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  .serif { font-family: var(--display) !important; }
 
-    section>div>h1 {
-      font-family: Big Shoulders Display;
-      color: hsl(0, 0%, 95%)
-    }
-
-    section>div>p {
-      color: hsla(0, 0%, 100%, 0.75);
-      font-family: Lexend Deca;
-      line-height: 25px;
-
-    }
-
-    .Sedans {
-      background-color: hsl(31, 77%, 52%);
-
-    }
-
-    .SUVs {
-      background-color: hsl(184, 100%, 22%);
-    }
-
-    .Luxury {
-      background-color: hsl(179, 100%, 13%);
-    }
-    .Sedans>button{
-      padding: 10px 25px;
-      border-radius:50px;
-      color: hsl(31, 77%, 52%);
-      background-color: hsl(0, 0%, 95%);
-      border: 2px solid  hsl(0, 0%, 95%);
-    }
-    .SUVs>button{
-      padding: 10px 25px;
-      border-radius:50px;
-      color:hsl(184, 100%, 22%);
-      background-color: hsl(0, 0%, 95%);
-      border: 2px solid  hsl(0, 0%, 95%);
-    }
-    .Luxury>button{
-      padding: 10px 25px;
-      border-radius:50px;
-      color:hsl(179, 100%, 13%);
-      background-color: hsl(0, 0%, 95%);
-      border: 2px solid  hsl(0, 0%, 95%);
-    }
-    .Sedans>button:hover{
-      color: hsl(0, 0%, 95%);
-      background-color: hsl(31, 77%, 52%);
-      border: 2px  hsl(0, 0%, 95%) solid ;
-    }
-    .SUVs>button:hover{
-      color: hsl(0, 0%, 95%);
-      background-color:hsl(184, 100%, 22%);
-      border: 2px  hsl(0, 0%, 95%) solid ;
-    }
-    .Luxury>button:hover{
-      color: hsl(0, 0%, 95%);
-      background-color: hsl(179, 100%, 13%);
-      border: 2px  hsl(0, 0%, 95%) solid ;
-    }
-
-    @media (max-width:800px) {
-      section {
-        width: 100%;
-        justify-content: center;
-        border-radius: 10px;
-        overflow: hidden;
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr 1fr;
-      }
-      body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: hsl(0, 0%, 95%);
-      height: auto;
-    }
-
-    }
-  </style>
-
+  .scenes { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
+  .scene { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+  .scene.current { border-color: var(--mustard); box-shadow: inset 3px 0 0 var(--mustard); }
+  .thumb { width: 74px; aspect-ratio: 9 / 16; border: 1px solid var(--line); background: #F8F6F1 center / cover no-repeat; cursor: pointer; padding: 0; position: relative; border-radius: 3px; }
+  .thumb span { position: absolute; left: 0; right: 0; bottom: 0; font: 600 9px/1.2 var(--body); letter-spacing: .05em; text-transform: uppercase; background: rgba(31,29,26,.75); color: #F4F2EC; padding: 3px 2px; text-align: center; }
+  .scene-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .scene-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .scene-num { font-family: var(--display); font-style: italic; color: var(--oxblood); font-size: 15px; margin-right: auto; }
+  .dur { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); }
+  .dur input { width: 64px; padding: 6px 8px; font-family: var(--mono); font-size: 13px; }
+  .scene-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .scene-actions button, .scene-actions .btn { padding: 7px 10px; font-size: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+  .check input { accent-color: var(--oxblood); width: 16px; height: 16px; }
+  .slider { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .slider input { flex: 1; min-width: 0; accent-color: var(--oxblood); }
+  .swatches { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+  .sw { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
 </head>
-
 <body>
-  <section>
-    <div class="Sedans">
-      <img src="./images/icon-sedans.svg" alt="sedan car icon">
-      <h1>Sedans</h1>
-      <p>Choose a sedan for its affordability and excellent fuel economy. Ideal for cruising in the city
-        or on your next road trip.</p>
-      <button>Learn More</button>
+
+<div class="wrap">
+  <header>
+    <span class="tag">in 90 seconds</span>
+    <h1>Sketch Explainer <em>Studio.</em></h1>
+    <p>Build a vertical explainer from pencil-sketch illustrations: a title card, captioned scenes with slow zoom and pan, and your voiceover. Record it as a video and save the cover as a PNG.</p>
+  </header>
+
+  <div class="app">
+    <div class="preview">
+      <div class="stage"><canvas id="cv" width="1080" height="1920" aria-label="Video preview"></canvas></div>
+      <div class="transport">
+        <button class="play" id="playBtn" aria-label="Play">▶</button>
+        <input type="range" id="scrub" min="0" max="10" step="0.01" value="0" aria-label="Timeline">
+        <span class="time" id="time">0:00 / 0:00</span>
+      </div>
+      <div class="exports">
+        <button class="primary" id="recBtn">● Record video</button>
+        <button id="coverBtn">Save cover PNG</button>
+        <button id="saveVidBtn" hidden>Save video</button>
+      </div>
+      <p class="status" id="status" role="status">The scenes below are a sample. Swap in your own illustrations.</p>
     </div>
-    <div class="SUVs">
-      <img src="./images/icon-suvs.svg" alt=" suv car icon">
-      <h1>SUVs</h1>
-      <p>Take an SUV for its spacious interior, power, and versatility. Perfect for your next family vacation
-        and off-road adventures.</p>
-        <button>Learn More</button>
 
+    <div class="panels">
+      <section class="panel" aria-labelledby="h-cover">
+        <h2 id="h-cover">Title card</h2>
+        <div class="fields">
+          <label class="f">Topic line<input type="text" id="title" class="serif"></label>
+          <label class="f">Accent word<input type="text" id="accent" class="serif"></label>
+          <label class="f">Subtitle<input type="text" id="subtitle" class="serif"></label>
+          <label class="f">Badge<input type="text" id="badge" class="serif"></label>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-scenes">
+        <div class="panel-head">
+          <h2 id="h-scenes">Scenes</h2>
+          <div class="row">
+            <label class="btn">Add images…<input type="file" id="bulkImg" accept="image/*" multiple></label>
+            <button id="addScene">+ Scene</button>
+          </div>
+        </div>
+        <p class="hint">Scene 1 is the title card. Wrap words in <code>*asterisks*</code> to highlight them in mustard. Images you add fill the sample scenes first, in order.</p>
+        <ol class="scenes" id="scenes"></ol>
+      </section>
+
+      <section class="panel" aria-labelledby="h-voice">
+        <h2 id="h-voice">Voiceover</h2>
+        <div class="row">
+          <label class="btn">Choose audio…<input type="file" id="audioIn" accept="audio/*"></label>
+          <button id="audioClear" hidden>Remove</button>
+          <span class="hint" id="audioInfo">No voiceover. Scenes use the durations you set.</span>
+        </div>
+        <label class="check"><input type="checkbox" id="stretch" checked> Stretch scenes to match the voiceover length</label>
+      </section>
+
+      <section class="panel" aria-labelledby="h-look">
+        <h2 id="h-look">Motion</h2>
+        <label class="slider">Zoom and pan <input type="range" id="motion" min="0" max="100" value="55" aria-label="Zoom and pan amount"> <span class="time" id="motionVal">55</span></label>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="fade" checked> Crossfade between scenes</label>
+          <label class="check"><input type="checkbox" id="bar" checked> Progress line along the bottom</label>
+        </div>
+        <div class="swatches">Palette <span class="sw" style="background:#F8F6F1"></span><span class="sw" style="background:#1E1C1A"></span><span class="sw" style="background:#E7A93A"></span><span class="sw" style="background:#8E2132"></span></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-prompt">
+        <h2 id="h-prompt">Image prompts</h2>
+        <p class="hint">Use the same style prompt for every image so the series stays consistent. “Copy prompt” on a scene joins this style with that scene’s image idea.</p>
+        <label class="f">Style prompt<textarea id="stylePrompt" rows="5"></textarea></label>
+        <label class="f">Last copied prompt<textarea id="promptOut" rows="5" readonly></textarea></label>
+      </section>
     </div>
-    <div class="Luxury">
-      <img src="./images/icon-luxury.svg" alt="luxery car icon">
-      <h1>Luxury</h1>
-      <p>Cruise in the best car brands without the bloated prices. Enjoy the enhanced comfort of a luxury
-        rental and arrive in style.</p>
-        <button>Learn More</button>
+  </div>
+</div>
 
-    </div>
-  </section>
-  <!--
-  Sedans
-  Choose a sedan for its affordability and excellent fuel economy. Ideal for cruising in the city 
-  or on your next road trip.
+<script>
+(() => {
+  const W = 1080, H = 1920, FADE = 0.6;
+  const C = { bg: '#F8F6F1', bgRGB: '248,246,241', ink: '#1E1C1A', red: '#8E2132', mustard: '#E7A93A', badgeInk: '#2A2117', gray: '#6E6A64' };
+  const SERIF = '"Libre Caslon Text", Georgia, serif';
+  const STYLE_DEFAULT = 'Hand-drawn pencil sketch illustration, fine graphite crosshatching, black and white on off-white paper. A single mustard-yellow (#E7A93A) accent colour, used only on the key object. Clean editorial spot-illustration style, ordinary people in everyday settings. No text, no letters, no logos. Vertical 9:16 with the top third left empty.';
 
-  SUVs
-  Take an SUV for its spacious interior, power, and versatility. Perfect for your next family vacation 
-  and off-road adventures.
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const $ = (id) => document.getElementById(id);
 
-  Luxury
-  Cruise in the best car brands without the bloated prices. Enjoy the enhanced comfort of a luxury 
-  rental and arrive in style.
-  
--->
+  // ---------- seeded sketch helpers for the sample illustrations ----------
+  function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) / 4294967295) * 2 - 1; }; }
+  function sLine(g, x1, y1, x2, y2, r, passes = 2) {
+    for (let p = 0; p < passes; p++) {
+      g.beginPath(); g.moveTo(x1 + r() * 2.5, y1 + r() * 2.5);
+      g.quadraticCurveTo((x1 + x2) / 2 + r() * 4, (y1 + y2) / 2 + r() * 4, x2 + r() * 2.5, y2 + r() * 2.5); g.stroke();
+    }
+  }
+  function sPoly(g, pts, r) { pts.forEach((p, i) => { const q = pts[(i + 1) % pts.length]; sLine(g, p[0], p[1], q[0], q[1], r); }); }
+  function fillPoly(g, pts, color) { g.fillStyle = color; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fill(); }
+  function hatch(g, pts, gap, r, slope = 0.8) {
+    g.save(); g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.clip();
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    const y0 = Math.min(...ys), y1 = Math.max(...ys), span = (y1 - y0) * slope;
+    g.globalAlpha = 0.45; g.lineWidth = 1.3;
+    for (let x = Math.min(...xs) - span; x < Math.max(...xs) + 10; x += gap) {
+      g.beginPath(); g.moveTo(x + r() * 2, y1); g.lineTo(x + span + r() * 2, y0); g.stroke();
+    }
+    g.restore();
+  }
+  function box(g, x, y, w, h, r, gold) {
+    const d = w * 0.22;
+    const front = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+    const top = [[x, y], [x + d, y - d], [x + w + d, y - d], [x + w, y]];
+    const side = [[x + w, y], [x + w + d, y - d], [x + w + d, y + h - d], [x + w, y + h]];
+    fillPoly(g, front, gold ? C.mustard : C.bg); fillPoly(g, top, gold ? '#F0C46E' : C.bg); fillPoly(g, side, gold ? '#C98B24' : C.bg);
+    hatch(g, side, 9, r);
+    if (gold) hatch(g, front, 22, r, -0.6);
+    sPoly(g, front, r); sPoly(g, top, r); sPoly(g, side, r);
+    sLine(g, x + w / 2, y, x + w / 2, y + h * 0.35, r, 1); sLine(g, x + w / 2 + d / 2 - 2, y - d / 2, x + w / 2, y, r, 1);
+  }
+  function makeSample(kind, seed) {
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 1300;
+    const g = c.getContext('2d'), r = rng(seed);
+    g.fillStyle = C.bg; g.fillRect(0, 0, c.width, c.height);
+    g.strokeStyle = '#3A3733'; g.lineWidth = 2.4; g.lineCap = 'round'; g.lineJoin = 'round';
+    const ground = 1150;
+    sLine(g, 30, ground, 1050, ground, r);
+    g.save(); g.globalAlpha = 0.3; for (let x = 70; x < 1060; x += 28) sLine(g, x, ground + 12, x - 46, ground + 70, r, 1); g.restore();
+    if (kind === 0) {
+      const s = 172, rows = [[0, 1, 2, 3], [0.5, 1.5, 2.5], [1, 2], [1.5]];
+      const goldAt = seed % 2 ? '2,1' : '3,1.5';
+      rows.forEach((row, ri) => row.forEach(ci => box(g, 150 + ci * s, ground - (ri + 1) * s, s - 14, s - 14, r, goldAt === ri + ',' + ci)));
+    } else if (kind === 1) {
+      sLine(g, 150, 330, 150, ground, r);
+      const hs = [180, 260, 330, 300, 430, 520, 640];
+      hs.forEach((h, i) => { const x = 200 + i * 112, pts = [[x, ground - h], [x + 72, ground - h], [x + 72, ground], [x, ground]]; fillPoly(g, pts, C.bg); hatch(g, pts, 11, r); sPoly(g, pts, r); });
+      g.save(); g.strokeStyle = C.mustard; g.lineWidth = 12;
+      const line = hs.map((h, i) => [236 + i * 112, ground - h - 90]);
+      for (let i = 0; i < line.length - 1; i++) sLine(g, line[i][0], line[i][1], line[i + 1][0], line[i + 1][1], r, 1);
+      const e = line[line.length - 1]; sLine(g, e[0], e[1], e[0] - 50, e[1] + 6, r, 1); sLine(g, e[0], e[1], e[0] - 18, e[1] + 46, r, 1);
+      g.restore();
+    } else if (kind === 2) {
+      const stacks = [[200, 7], [380, 11], [560, 5], [740, 14], [900, 8]];
+      stacks.forEach(([cx, n], si) => {
+        const gold = si === 3;
+        for (let k = 0; k < n; k++) {
+          const cy = ground - 26 - k * 30;
+          g.fillStyle = gold ? C.mustard : C.bg;
+          g.beginPath(); g.ellipse(cx, cy + 14, 72, 22, 0, 0, Math.PI); g.lineTo(cx - 72, cy); g.ellipse(cx, cy, 72, 22, 0, Math.PI, 0, false); g.closePath(); g.fill();
+          g.beginPath(); g.ellipse(cx + r(), cy + r(), 72, 22, 0, 0, Math.PI * 2); g.fillStyle = gold ? '#F0C46E' : C.bg; g.fill(); g.stroke();
+          g.beginPath(); g.ellipse(cx, cy + 14, 72, 22, 0, 0, Math.PI); g.stroke();
+          sLine(g, cx - 72, cy, cx - 72, cy + 14, r, 1); sLine(g, cx + 72, cy, cx + 72, cy + 14, r, 1);
+        }
+      });
+    } else {
+      const L = 190, R = 890;
+      const roof = [[L - 30, 520], [(L + R) / 2, 360], [R + 30, 520]];
+      fillPoly(g, roof, C.bg); hatch(g, roof, 12, r, -0.5); sPoly(g, roof, r);
+      sLine(g, L - 40, 540, R + 40, 540, r); sLine(g, L - 40, 520, R + 40, 520, r);
+      for (let i = 0; i < 6; i++) {
+        const x = L + 10 + i * 128, col = [[x, 560], [x + 54, 560], [x + 54, 1030], [x, 1030]];
+        if (i === 2 || i === 3) continue;
+        hatch(g, [[x + 34, 560], [x + 54, 560], [x + 54, 1030], [x + 34, 1030]], 7, r);
+        sPoly(g, col, r);
+      }
+      const door = [[L + 270, 700], [R - 270, 700], [R - 270, 1030], [L + 270, 1030]];
+      fillPoly(g, door, C.mustard); hatch(g, door, 18, r, -0.6); sPoly(g, door, r);
+      sLine(g, (L + R) / 2, 700, (L + R) / 2, 1030, r, 1);
+      [1050, 1090, 1130].forEach((y, i) => sLine(g, L - 60 - i * 30, y, R + 60 + i * 30, y, r));
+    }
+    return c;
+  }
+  const samples = [makeSample(0, 7), makeSample(2, 3), makeSample(3, 11), makeSample(1, 5), makeSample(0, 4)];
+  const sampleThumbs = samples.map(s => { const t = document.createElement('canvas'); t.width = 180; t.height = 320; const g = t.getContext('2d'); g.fillStyle = C.bg; g.fillRect(0, 0, 180, 320); const sc = 180 / s.width; g.drawImage(s, 0, 320 - s.height * sc, 180, s.height * sc); return t.toDataURL('image/jpeg', 0.8); });
+
+  // ---------- state ----------
+  let uid = 0;
+  const DEFAULT = {
+    title: 'Index funds,', accent: 'explained.', subtitle: 'the whole market in one basket, October 2026', badge: 'in 90 seconds',
+    motion: 55, fade: true, bar: true, stretch: true, style: STYLE_DEFAULT,
+    scenes: [
+      { caption: '', idea: 'a woman lifting one mustard-yellow box from a tall stack of cardboard boxes in a warehouse', dur: 4 },
+      { caption: 'Most investors try to pick *the next winner*. That is hard, and expensive.', idea: 'a man squinting at a wall of stacked coins, one mustard stack', dur: 6 },
+      { caption: 'An index fund skips the guessing. It buys *every company* on a list, like the S&P 500.', idea: 'an old bank building with columns and a mustard-yellow front door', dur: 6 },
+      { caption: 'Fees stay tiny, often under *0.1% a year*. You keep more of the growth.', idea: 'a bar chart drawn on paper with a mustard arrow rising across it', dur: 6 },
+      { caption: 'Over 15 years, most stock pickers *fail to beat* the plain index.', idea: 'a pyramid of boxes with one mustard box near the top', dur: 6 }
+    ]
+  };
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem('sketch-studio-v1') || 'null'); if (s && Array.isArray(s.scenes) && s.scenes.length) return s; } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT));
+  }
+  const st = load();
+  st.scenes.forEach((s, i) => { s.id = ++uid; s.img = null; s.sample = i % samples.length; });
+  function persist() {
+    try {
+      localStorage.setItem('sketch-studio-v1', JSON.stringify({ ...st, scenes: st.scenes.map(({ caption, idea, dur }) => ({ caption, idea, dur })) }));
+    } catch (e) {}
+  }
+
+  let audio = null; // { buffer, name }
+  let actx = null, audioDest = null, audioNode = null, actxStart = 0;
+  let playing = false, t = 0, tStart = 0, clockStart = 0;
+  let recorder = null, recording = false, videoBlob = null, videoExt = 'mp4';
+
+  // ---------- timing ----------
+  function durations() {
+    const base = st.scenes.map(s => Math.max(0.5, +s.dur || 0.5));
+    if (audio && st.stretch) { const sum = base.reduce((a, b) => a + b, 0); return base.map(d => d * audio.buffer.duration / sum); }
+    return base;
+  }
+  const total = () => durations().reduce((a, b) => a + b, 0);
+  function sceneAt(time) {
+    const ds = durations(); let acc = 0;
+    for (let i = 0; i < ds.length; i++) { if (time < acc + ds[i] || i === ds.length - 1) return { i, lt: time - acc, d: ds[i], ds }; acc += ds[i]; }
+  }
+  const sceneStart = (i) => durations().slice(0, i).reduce((a, b) => a + b, 0);
+  const fmt = (s) => { s = Math.max(0, s); return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0'); };
+
+  // ---------- text layout ----------
+  function wrapPlain(text, maxW) {
+    const words = text.split(/\s+/).filter(Boolean), lines = []; let cur = '';
+    words.forEach(w => { const tryL = cur ? cur + ' ' + w : w; if (cur && ctx.measureText(tryL).width > maxW) { lines.push(cur); cur = w; } else cur = tryL; });
+    if (cur) lines.push(cur); return lines;
+  }
+  function richWords(text) {
+    const words = []; let hl = false, word = null;
+    for (const ch of text) {
+      if (ch === '*') { hl = !hl; continue; }
+      if (/\s/.test(ch)) { word = null; continue; }
+      if (!word) { word = []; words.push(word); }
+      const last = word[word.length - 1];
+      if (last && last.hl === hl) last.t += ch; else word.push({ t: ch, hl });
+    }
+    return words;
+  }
+  function layoutRich(text, maxW, fs) {
+    ctx.font = `${fs}px ${SERIF}`;
+    const space = ctx.measureText(' ').width, lines = []; let cur = [], curW = 0;
+    richWords(text).forEach(segs => {
+      segs.forEach(s => s.w = ctx.measureText(s.t).width);
+      const w = segs.reduce((a, s) => a + s.w, 0), add = (cur.length ? space : 0) + w;
+      if (cur.length && curW + add > maxW) { lines.push({ words: cur, width: curW }); cur = [{ segs, w }]; curW = w; }
+      else { cur.push({ segs, w }); curW += add; }
+    });
+    if (cur.length) lines.push({ words: cur, width: curW });
+    return { lines, space };
+  }
+
+  // ---------- drawing ----------
+  function drawCover() {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    let y = 150;
+    if (st.badge.trim()) {
+      ctx.font = `italic 34px ${SERIF}`;
+      const bw = ctx.measureText(st.badge).width + 44;
+      ctx.fillStyle = C.mustard; ctx.fillRect(W / 2 - bw / 2, y - 8, bw, 54);
+      ctx.fillStyle = C.badgeInk; ctx.fillText(st.badge, W / 2, y + 30);
+    }
+    let fs = 96, lines;
+    for (; fs > 52; fs -= 4) { ctx.font = `${fs}px ${SERIF}`; lines = wrapPlain(st.title, 940); if (lines.length <= 2 && lines.every(l => ctx.measureText(l).width <= 940)) break; }
+    y = 300 + fs * 0.35;
+    ctx.fillStyle = C.ink; lines.forEach(l => { ctx.fillText(l, W / 2, y); y += fs * 1.1; });
+    if (st.accent.trim()) { ctx.font = `italic ${fs}px ${SERIF}`; ctx.fillStyle = C.red; ctx.fillText(st.accent, W / 2, y); y += fs * 0.25; }
+    else y -= fs * 0.85;
+    if (st.subtitle.trim()) {
+      let sfs = 36; ctx.font = `${sfs}px ${SERIF}`;
+      while (ctx.measureText(st.subtitle).width > 980 && sfs > 22) { sfs -= 2; ctx.font = `${sfs}px ${SERIF}`; }
+      y += 70; ctx.fillStyle = C.gray; ctx.fillText(st.subtitle, W / 2, y);
+    }
+    return Math.max(y + 50, 620);
+  }
+  function drawCaption(text) {
+    const maxW = 940, boxTop = 130, boxBottom = 660;
+    let fs = 70, lay;
+    for (; fs >= 40; fs -= 3) { lay = layoutRich(text, maxW, fs); if (lay.lines.length * fs * 1.3 <= boxBottom - boxTop) break; }
+    const lh = fs * 1.3;
+    let y = boxTop + (boxBottom - boxTop - lay.lines.length * lh) / 2 + fs * 1.0;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = `${fs}px ${SERIF}`;
+    lay.lines.forEach(line => {
+      // marker highlights first, then the words on top
+      let x = W / 2 - line.width / 2;
+      line.words.forEach((wd, wi) => {
+        let sx = x;
+        wd.segs.forEach((sg, si) => {
+          if (sg.hl) {
+            const next = line.words[wi + 1];
+            const bridge = si === wd.segs.length - 1 && next && next.segs[0].hl ? lay.space : 0;
+            ctx.fillStyle = C.mustard; ctx.fillRect(sx - 8, y - fs * 0.82, sg.w + 16 + bridge, fs * 1.06);
+          }
+          sx += sg.w;
+        });
+        x += wd.w + lay.space;
+      });
+      x = W / 2 - line.width / 2; ctx.fillStyle = C.ink;
+      line.words.forEach(wd => { let sx = x; wd.segs.forEach(sg => { ctx.fillText(sg.t, sx, y); sx += sg.w; }); x += wd.w + lay.space; });
+      y += lh;
+    });
+    return 700;
+  }
+  const ease = (p) => p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+  function drawArt(img, top, lt, d, idx) {
+    const ah = H - top, iw = img.width, ih = img.height;
+    const base = Math.max(W / iw, ah / ih), k = st.motion / 100 * 0.16;
+    const p = ease(Math.min(1, Math.max(0, lt / d)));
+    const z = 1 + k * (idx % 2 === 0 ? p : 1 - p);
+    const dw = iw * base * z, dh = ih * base * z;
+    const dir = [[1, 0], [-1, 0], [0, -1], [0.7, -0.7]][idx % 4];
+    const mx = (dw - W) / 2, my = (dh - ah) / 2;
+    const ox = Math.max(-mx, Math.min(mx, dir[0] * k * 0.6 * W * (p - 0.5)));
+    const oy = Math.max(-my, Math.min(my, dir[1] * k * 0.6 * ah * (p - 0.5)));
+    ctx.save(); ctx.beginPath(); ctx.rect(0, top, W, ah); ctx.clip();
+    ctx.drawImage(img, (W - dw) / 2 + ox, top + (ah - dh) / 2 + oy, dw, dh);
+    ctx.restore();
+    const g = ctx.createLinearGradient(0, top, 0, top + 170);
+    g.addColorStop(0, `rgba(${C.bgRGB},1)`); g.addColorStop(1, `rgba(${C.bgRGB},0)`);
+    ctx.fillStyle = g; ctx.fillRect(0, top, W, 170);
+  }
+  function drawScene(i, lt, d) {
+    const s = st.scenes[i];
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const top = i === 0 ? drawCover() : drawCaption(s.caption || '');
+    drawArt(s.img || samples[s.sample % samples.length], top, lt, d, i);
+  }
+  function draw(time) {
+    const { i, lt, d, ds } = sceneAt(time);
+    drawScene(i, lt, d);
+    if (st.fade && i < ds.length - 1 && lt > d - FADE) {
+      ctx.globalAlpha = (lt - (d - FADE)) / FADE;
+      drawScene(i + 1, 0, ds[i + 1]);
+      ctx.globalAlpha = 1;
+    }
+    if (st.bar) { ctx.fillStyle = C.mustard; ctx.fillRect(0, H - 12, W * Math.min(1, time / total()), 12); }
+    markCurrent(i);
+  }
+  let lastCurrent = -1;
+  function markCurrent(i) {
+    if (i === lastCurrent) return; lastCurrent = i;
+    document.querySelectorAll('.scene').forEach((el, k) => el.classList.toggle('current', k === i));
+  }
+
+  // ---------- playback ----------
+  function ensureAudioCtx() {
+    if (!actx) { actx = new (window.AudioContext || window.webkitAudioContext)(); audioDest = actx.createMediaStreamDestination ? actx.createMediaStreamDestination() : null; }
+    return actx;
+  }
+  function startAudio(at) {
+    if (!audio || at >= audio.buffer.duration) return;
+    ensureAudioCtx(); actx.resume();
+    audioNode = actx.createBufferSource(); audioNode.buffer = audio.buffer;
+    audioNode.connect(actx.destination); if (audioDest) audioNode.connect(audioDest);
+    audioNode.start(0, at); actxStart = actx.currentTime;
+  }
+  function stopAudio() { if (audioNode) { try { audioNode.stop(); } catch (e) {} audioNode.disconnect(); audioNode = null; } }
+  const now = () => audioNode ? tStart + (actx.currentTime - actxStart) : tStart + (performance.now() - clockStart) / 1000;
+  function play() {
+    if (t >= total() - 0.02) t = 0;
+    playing = true; tStart = t; clockStart = performance.now(); startAudio(t);
+    setPlayUI(); requestAnimationFrame(frame);
+  }
+  function pause() { if (playing) t = Math.min(now(), total()); playing = false; stopAudio(); setPlayUI(); }
+  function frame() {
+    if (!playing) return;
+    t = Math.min(now(), total()); draw(t); syncScrub();
+    if (t >= total()) { pause(); if (recording) setTimeout(endRecording, 250); return; }
+    requestAnimationFrame(frame);
+  }
+  function setPlayUI() { $('playBtn').textContent = playing ? '❚❚' : '▶'; $('playBtn').setAttribute('aria-label', playing ? 'Pause' : 'Play'); }
+  function syncScrub() {
+    const tot = total(); $('scrub').max = tot.toFixed(2); $('scrub').value = t.toFixed(2);
+    $('time').textContent = fmt(t) + ' / ' + fmt(tot);
+    if (recording) setStatus(`Recording ${fmt(t)} of ${fmt(tot)}. Keep this tab open until it finishes.`);
+  }
+  function render() { if (!playing) { t = Math.min(t, total()); draw(t); syncScrub(); } }
+  function seek(time) { const was = playing; if (was) pause(); t = Math.max(0, Math.min(time, total())); render(); if (was) play(); }
+  const setStatus = (m) => { $('status').textContent = m; };
+
+  // ---------- export ----------
+  async function offerFile(blob, filename) {
+    let dl = null;
+    try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+    if (dl) {
+      try { await dl.save({ filename, data: blob }); setStatus('Saved ' + filename + '.'); }
+      catch (e) {
+        const code = e && e.code;
+        setStatus(code === 'declined' ? 'Save cancelled.' : code === 'rate_limited' ? 'A save prompt is already open. Try again in a moment.' : 'Saving files is not available in this view.');
+      }
+      return;
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    setStatus('Saved ' + filename + '.');
+  }
+  const slug = () => ((st.title + ' ' + st.accent).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'explainer');
+  function pickMime(withAudio) {
+    const list = withAudio
+      ? ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+      : ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
+    return list.find(m => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || '';
+  }
+  function startRecording() {
+    if (!window.MediaRecorder || !cv.captureStream) { setStatus('This browser cannot record canvas video. Try Chrome, Edge or Safari on a computer.'); return; }
+    pause(); t = 0; draw(0);
+    const tracks = [...cv.captureStream(30).getVideoTracks()];
+    if (audio) { ensureAudioCtx(); if (audioDest) tracks.push(...audioDest.stream.getAudioTracks()); }
+    const mime = pickMime(!!audio);
+    try { recorder = new MediaRecorder(new MediaStream(tracks), mime ? { mimeType: mime, videoBitsPerSecond: 8e6 } : { videoBitsPerSecond: 8e6 }); }
+    catch (e) { setStatus('Recording could not start in this browser.'); return; }
+    const chunks = [];
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      const type = recorder.mimeType || mime || 'video/webm';
+      videoBlob = new Blob(chunks, { type }); videoExt = type.includes('mp4') ? 'mp4' : 'webm';
+      recording = false; lockUI(false);
+      $('saveVidBtn').hidden = false; $('saveVidBtn').textContent = `Save video (${videoExt.toUpperCase()}, ${(videoBlob.size / 1048576).toFixed(1)} MB)`;
+      setStatus(`Video ready: ${fmt(total())}. Save it below.` + (videoExt === 'webm' ? ' WebM plays in most apps; convert to MP4 if your upload tool asks.' : ''));
+    };
+    recording = true; videoBlob = null; $('saveVidBtn').hidden = true; lockUI(true);
+    recorder.start(250);
+    setTimeout(play, 120);
+  }
+  function endRecording() { if (recorder && recorder.state !== 'inactive') recorder.stop(); }
+  function lockUI(on) { ['recBtn', 'playBtn', 'scrub', 'coverBtn'].forEach(id => $(id).disabled = on); $('recBtn').textContent = on ? '● Recording…' : '● Record video'; }
+
+  // ---------- scenes UI ----------
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function renderScenes() {
+    const list = $('scenes');
+    list.innerHTML = st.scenes.map((s, i) => `
+      <li class="scene" data-i="${i}">
+        <button class="thumb" data-act="seek" style="background-image:url('${s.thumb || sampleThumbs[s.sample % sampleThumbs.length]}')" aria-label="Jump to scene ${i + 1}">${s.img ? '' : '<span>Sample</span>'}</button>
+        <div class="scene-body">
+          <div class="scene-top">
+            <span class="scene-num">${i === 0 ? 'Scene 1 · title card' : 'Scene ' + (i + 1)}</span>
+            <label class="dur"><input type="number" min="0.5" max="60" step="0.5" value="${s.dur}" data-k="dur" id="dur-${s.id}" aria-label="Scene ${i + 1} seconds"> s</label>
+          </div>
+          ${i === 0 ? '' : `<textarea rows="2" class="serif" data-k="caption" id="cap-${s.id}" aria-label="Scene ${i + 1} caption" placeholder="What the narrator is saying here">${esc(s.caption)}</textarea>`}
+          <input type="text" data-k="idea" id="idea-${s.id}" value="${esc(s.idea || '')}" placeholder="Image idea, e.g. a man carrying a mustard box" aria-label="Scene ${i + 1} image idea">
+          <div class="scene-actions">
+            <label class="btn">${s.img ? 'Replace image' : 'Upload image'}<input type="file" accept="image/*" data-act="img"></label>
+            <button data-act="prompt">Copy prompt</button>
+            <button class="icon" data-act="up" ${i === 0 ? 'disabled' : ''} aria-label="Move scene up">↑</button>
+            <button class="icon" data-act="down" ${i === st.scenes.length - 1 ? 'disabled' : ''} aria-label="Move scene down">↓</button>
+            <button class="icon" data-act="del" ${st.scenes.length === 1 ? 'disabled' : ''} aria-label="Delete scene">✕</button>
+          </div>
+        </div>
+      </li>`).join('');
+    lastCurrent = -1;
+  }
+  function loadImage(file) {
+    return new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(file); });
+  }
+  async function setSceneImage(s, file) {
+    try { s.img = await loadImage(file); s.thumb = s.img.src; }
+    catch (e) { setStatus('That file could not be read as an image.'); }
+  }
+  $('scenes').addEventListener('input', (e) => {
+    const li = e.target.closest('.scene'); const k = e.target.dataset.k; if (!li || !k) return;
+    const s = st.scenes[+li.dataset.i];
+    s[k] = k === 'dur' ? Math.max(0.5, parseFloat(e.target.value) || 0.5) : e.target.value;
+    persist(); if (k === 'caption' && !playing) { t = sceneStart(+li.dataset.i) + 0.01; } render(); updateAudioInfo();
+  });
+  $('scenes').addEventListener('change', async (e) => {
+    if (e.target.dataset.act !== 'img' || !e.target.files[0]) return;
+    const i = +e.target.closest('.scene').dataset.i;
+    await setSceneImage(st.scenes[i], e.target.files[0]);
+    renderScenes(); seek(sceneStart(i) + 0.01);
+  });
+  $('scenes').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'INPUT' || b.tagName === 'LABEL') return;
+    const i = +b.closest('.scene').dataset.i, sc = st.scenes, act = b.dataset.act;
+    if (act === 'seek') return seek(sceneStart(i) + 0.01);
+    if (act === 'prompt') return copyPrompt(sc[i]);
+    if (act === 'up' && i > 0) [sc[i - 1], sc[i]] = [sc[i], sc[i - 1]];
+    if (act === 'down' && i < sc.length - 1) [sc[i + 1], sc[i]] = [sc[i], sc[i + 1]];
+    if (act === 'del' && sc.length > 1) sc.splice(i, 1);
+    persist(); renderScenes(); render(); updateAudioInfo();
+  });
+  $('addScene').addEventListener('click', () => {
+    st.scenes.push({ id: ++uid, caption: 'A new point, with *one highlight*.', idea: '', dur: 5, img: null, sample: st.scenes.length % samples.length });
+    persist(); renderScenes(); seek(sceneStart(st.scenes.length - 1) + 0.01); updateAudioInfo();
+  });
+  $('bulkImg').addEventListener('change', async (e) => {
+    const files = [...e.target.files]; e.target.value = '';
+    for (const f of files) {
+      let s = st.scenes.find(x => !x.img);
+      if (!s) { s = { id: ++uid, caption: 'A new point, with *one highlight*.', idea: '', dur: 5, img: null, sample: 0 }; st.scenes.push(s); }
+      await setSceneImage(s, f);
+    }
+    persist(); renderScenes(); render(); updateAudioInfo();
+    setStatus(`Added ${files.length} image${files.length === 1 ? '' : 's'}.`);
+  });
+  function copyPrompt(s) {
+    const idea = (s.idea || '').trim() || (s.caption || '').replace(/\*/g, '').trim() || 'an everyday scene that shows the idea';
+    const text = st.style.trim() + '\n\nScene: ' + idea + '.';
+    const out = $('promptOut'); out.value = text;
+    const fallback = () => { out.focus(); out.select(); setStatus('Prompt selected below. Copy it from there.'); };
+    try { navigator.clipboard.writeText(text).then(() => setStatus('Prompt copied. Paste it into your image generator.'), fallback); }
+    catch (e) { fallback(); }
+  }
+
+  // ---------- voiceover ----------
+  function updateAudioInfo() {
+    if (!audio) { $('audioInfo').textContent = 'No voiceover. Scenes use the durations you set.'; $('audioClear').hidden = true; return; }
+    const set = st.scenes.reduce((a, s) => a + (+s.dur || 0.5), 0);
+    $('audioClear').hidden = false;
+    $('audioInfo').textContent = `${audio.name} · ${fmt(audio.buffer.duration)}` + (st.stretch ? ` · scenes stretched from ${set.toFixed(1)} s to ${audio.buffer.duration.toFixed(1)} s` : '');
+  }
+  $('audioIn').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    pause();
+    try {
+      ensureAudioCtx();
+      const ab = await f.arrayBuffer();
+      const buf = await new Promise((res, rej) => actx.decodeAudioData(ab, res, rej));
+      audio = { buffer: buf, name: f.name };
+      setStatus('Voiceover loaded. Press play to hear it with the scenes.');
+    } catch (err) { setStatus('That audio file could not be decoded. Try MP3, M4A or WAV.'); }
+    updateAudioInfo(); render();
+  });
+  $('audioClear').addEventListener('click', () => { pause(); audio = null; updateAudioInfo(); render(); });
+
+  // ---------- bindings ----------
+  [['title', 'title'], ['accent', 'accent'], ['subtitle', 'subtitle'], ['badge', 'badge'], ['stylePrompt', 'style']].forEach(([id, k]) => {
+    $(id).value = st[k];
+    $(id).addEventListener('input', () => { st[k] = $(id).value; persist(); if (k !== 'style' && !playing) t = 0.01; render(); });
+  });
+  [['fade', 'fade'], ['bar', 'bar'], ['stretch', 'stretch']].forEach(([id, k]) => {
+    $(id).checked = !!st[k];
+    $(id).addEventListener('change', () => { st[k] = $(id).checked; persist(); render(); updateAudioInfo(); });
+  });
+  $('motion').value = st.motion; $('motionVal').textContent = st.motion;
+  $('motion').addEventListener('input', () => { st.motion = +$('motion').value; $('motionVal').textContent = st.motion; persist(); render(); });
+  $('playBtn').addEventListener('click', () => playing ? pause() : play());
+  $('scrub').addEventListener('input', () => seek(parseFloat($('scrub').value)));
+  $('recBtn').addEventListener('click', startRecording);
+  $('saveVidBtn').addEventListener('click', () => videoBlob && offerFile(videoBlob, slug() + '.' + videoExt));
+  $('coverBtn').addEventListener('click', () => {
+    pause(); t = 0; draw(0); syncScrub();
+    cv.toBlob(b => b ? offerFile(b, slug() + '-cover.png') : setStatus('The cover could not be exported.'), 'image/png');
+  });
+
+  renderScenes(); render();
+  if (document.fonts) {
+    Promise.all([`400 40px ${SERIF}`, `italic 400 40px ${SERIF}`].map(f => document.fonts.load(f))).then(render, render);
+    document.fonts.ready.then(render);
+  }
+})();
+</script>
 </body>
-
 </html>
