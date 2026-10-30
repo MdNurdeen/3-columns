@@ -22,6 +22,7 @@ text{font-family:K;}
  <pattern id="hatchG" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="8" height="8" fill="#b9b9b9"/><line x1="0" y1="0" x2="0" y2="8" stroke="#a2a2a2" stroke-width="3"/></pattern>
 </defs>
 <rect width="720" height="1280" fill="#fcfcfa"/>
+<g id="bg"></g>
 <g id="root"></g>
 <rect width="720" height="1280" filter="url(#grain)" opacity=".05" pointer-events="none"/>
 <rect width="720" height="1280" fill="url(#vig)"/>
@@ -330,7 +331,33 @@ function animEl(el, t) {
 function lookup(tl, t) { let cur = tl[0], prev = tl[0]; for (const k of tl) { if (t >= k[0]) { prev = cur; cur = k; } } return { cur, prev }; }
 const TR = 0.3, VEND = CFG.voiceEnd, LOGO_T = CFG.endScene + .08, END_S = CFG.endScene;
 const STAMPS = [...document.querySelectorAll('.an[data-a="stamp"]')].map(e => +e.dataset.in);
+
+// ---------- premium backgrounds (CFG.bg) ----------
+const BG = {
+  plain: () => '',
+  dots: () => `<defs><linearGradient id="bgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfaf6"/><stop offset="1" stop-color="#eef2f7"/></linearGradient>
+    <pattern id="bgDots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.9" fill="#c9d2de"/></pattern></defs>
+    <rect width="720" height="1280" fill="url(#bgG)"/><rect class="bgDrift" x="-60" y="-60" width="840" height="1400" fill="url(#bgDots)" opacity=".85"/>`,
+  grid: () => `<defs><linearGradient id="bgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdfcf8"/><stop offset="1" stop-color="#f3f6fa"/></linearGradient>
+    <pattern id="bgMinor" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32,0 H0 V32" fill="none" stroke="#e3e9f1" stroke-width="1.2"/></pattern>
+    <pattern id="bgMajor" width="160" height="160" patternUnits="userSpaceOnUse"><rect width="160" height="160" fill="url(#bgMinor)"/><path d="M160,0 H0 V160" fill="none" stroke="#d3ddea" stroke-width="2"/></pattern></defs>
+    <rect width="720" height="1280" fill="url(#bgG)"/><rect class="bgDrift" x="-160" y="-160" width="1040" height="1600" fill="url(#bgMajor)"/>`,
+  aurora: () => `<defs><linearGradient id="bgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbfaf6"/><stop offset="1" stop-color="#f1f4f9"/></linearGradient>
+    <filter id="bgBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="70"/></filter>
+    <pattern id="bgDots" width="34" height="34" patternUnits="userSpaceOnUse"><circle cx="17" cy="17" r="1.6" fill="#cfd7e2"/></pattern></defs>
+    <rect width="720" height="1280" fill="url(#bgG)"/>
+    <g filter="url(#bgBlur)" opacity=".55"><circle class="blob" data-k="0" cx="120" cy="230" r="210" fill="#bcd8f5"/><circle class="blob" data-k="1" cx="640" cy="620" r="230" fill="#c9ecd2"/><circle class="blob" data-k="2" cx="200" cy="1120" r="220" fill="#ffe2b8"/></g>
+    <rect class="bgDrift" x="-60" y="-60" width="840" height="1400" fill="url(#bgDots)" opacity=".7"/>`,
+};
+function bgInit() { document.getElementById('bg').innerHTML = (BG[CFG.bg || 'plain'] || BG.plain)(); }
+function bgRender(t) {
+  for (const el of document.querySelectorAll('#bg .bgDrift')) el.setAttribute('transform', `translate(${(t * 4) % 30},${(t * 6) % 30})`);
+  for (const el of document.querySelectorAll('#bg .blob')) { const k = +el.dataset.k; el.setAttribute('transform', `translate(${Math.sin(t * .15 + k * 2) * 60},${Math.cos(t * .12 + k) * 70})`); }
+}
+
 window.render = function (t) {
+  if (!window._bgDone) { bgInit(); window._bgDone = 1; }
+  bgRender(t);
   const amp = AMP[Math.min(AMP.length - 1, Math.floor(t * 24))] || 0;
   const filt = 'url(#r' + (Math.floor(t * 8) % 3) + ')';
   let shx = 0, shy = 0, punch = 0;
