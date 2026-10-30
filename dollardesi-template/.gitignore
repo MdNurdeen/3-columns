@@ -10,3 +10,4 @@ projects/*/*.woff2
 projects/*/video.mp4
 projects/*/*.wav
 projects/*/vo_trimmed.wav
+projects/*/*-logo.png
