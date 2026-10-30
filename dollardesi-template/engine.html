@@ -256,7 +256,7 @@ function drawChar(c, t, amp) {
       <path d="M-62,10 A62,62 0 0 0 40,60" fill="none" stroke="#ececec" stroke-width="12" stroke-linecap="round"/>
       <ellipse cx="-50" cy="20" rx="15" ry="9" fill="#ff9fb0" opacity="${ex === 'happy' || ex === 'excited' || ex === 'wink' || ex === 'angry' ? .8 : .5}"/>
       <ellipse cx="50" cy="20" rx="15" ry="9" fill="#ff9fb0" opacity="${ex === 'happy' || ex === 'excited' || ex === 'wink' || ex === 'angry' ? .8 : .5}"/>
-      ${F.brows}${F.eyes}${F.mouth}${d.acc === 'boss' ? `<g fill="none" stroke="${INK}" stroke-width="4.5"><circle cx="-28" cy="-10" r="20"/><circle cx="28" cy="-10" r="20"/><path d="M-8,-12 Q0,-18 8,-12 M-48,-14 L-80,-20 M48,-14 L80,-20"/></g><path d="M-30,22 Q-15,8 0,18 Q15,8 30,22 Q15,30 0,24 Q-15,30 -30,22Z" fill="#5a3d2b" stroke="${INK}" stroke-width="3"/>` : ''}${F.emo}
+      ${F.brows}${F.eyes}${F.mouth}${d.acc === 'boss' || d.acc === 'glasses' ? `<g fill="none" stroke="${INK}" stroke-width="4.5"><circle cx="-28" cy="-10" r="20"/><circle cx="28" cy="-10" r="20"/><path d="M-8,-12 Q0,-18 8,-12 M-48,-14 L-80,-20 M48,-14 L80,-20"/></g>` : ''}${d.acc === 'boss' ? `<path d="M-30,22 Q-15,8 0,18 Q15,8 30,22 Q15,30 0,24 Q-15,30 -30,22Z" fill="#5a3d2b" stroke="${INK}" stroke-width="3"/>` : ''}${F.emo}
     </g>
     ${arms}
    </g>`;
@@ -338,8 +338,9 @@ window.render = function (t) {
   document.getElementById('root').setAttribute('transform', `translate(${shx},${shy})`);
   document.getElementById('prog').setAttribute('width', 720 * clamp(t / VEND));
   const LT = LOGO_T, el = document.getElementById('endlogo');
-  document.getElementById('wm').style.display = t >= END_S ? 'none' : '';
-  el.style.display = t >= LT ? '' : 'none';
+  const BRAND = CFG.brand !== false;   // brand:false = no logo watermark, no logo ending
+  document.getElementById('wm').style.display = !BRAND || t >= END_S ? 'none' : '';
+  el.style.display = BRAND && t >= LT ? '' : 'none';
   if (t >= LT) { const p = clamp((t - LT) / .55); el.setAttribute('transform', `translate(360,${300 + Math.sin(t * 2.4) * 4}) scale(${eBack(p)}) rotate(${(1 - eOut(p)) * -25})`); }
   scenes.forEach((sc, i) => {
     const on = t >= sc.s - 0.001 && t < sc.e + (i < scenes.length - 1 ? TR : 0);
