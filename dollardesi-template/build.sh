@@ -5,7 +5,7 @@
 # Set FORCE=1 to render even if QA reports issues.
 set -euo pipefail
 T="$(cd "$(dirname "$0")" && pwd)"; P="$(cd "$1" && pwd)"; VO="$2"; MODE="${3:-preview}"
-for f in engine.html logo.png kalam-latin-400-normal.woff2 kalam-latin-700-normal.woff2; do ln -sf "$T/$f" "$P/$f"; done
+for f in engine.html "$T"/*.png kalam-latin-400-normal.woff2 kalam-latin-700-normal.woff2; do f="$(basename "$f")"; ln -sf "$T/$f" "$P/$f"; done
 # level the voiceover first: no section louder/quieter than the rest (e.g. a hot-recorded hook)
 ffmpeg -v error -y -i "$VO" -ar 44100 "$P/vo_raw.wav"
 python3 "$T/level_voice.py" "$P/vo_raw.wav" "$P/vo_lev.wav"
