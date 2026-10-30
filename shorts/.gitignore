@@ -1,3 +1,5 @@
 build/
+__pycache__/
 *.mp4
-!example/preview.mp4
+!stories/db-cooper/03.mp4
+!stories/db-cooper/preview.mp4
