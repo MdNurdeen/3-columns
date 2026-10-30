@@ -6,8 +6,8 @@ const CFG = {
   whoosh: [11.49, 20.56, 45.55, 64.97, 79.18, 96.27],   // ONLY major section changes (4–6)
   checks: [                  // every on-screen number that is derived from others
     { label: 'gross per paycheque', expr: '60000 / 26', expect: 2308, tol: 1 },
-    { label: 'net pay', expr: '2308 - 205 - 140 - 139 - 38', expect: 1786 },
-    { label: 'CPP per paycheque (5.95% after $3,500/yr exemption)', expr: '(2308 - 3500 / 26) * 0.0595', expect: 139, tol: 2, warn: true },  // recorded audio says 139; real value ≈ 129
+    { label: 'net pay', expr: '2308 - 205 - 150 - 129 - 38', expect: 1786 },
+    { label: 'CPP per paycheque (5.95% after $3,500/yr exemption)', expr: '(2308 - 3500 / 26) * 0.0595', expect: 129, tol: 1 },
     { label: 'EI amount', expr: '2308 * 0.0163', expect: 38, tol: 1 },
   ],
 };
@@ -81,14 +81,14 @@ scene(45.55, 57.58,
   A(50.0, 'up', txt(0, 0, 'suraksha', 44, { anchor: 'start' }), { x: 270, y: 505 }) +
   A(51.6, 'pop', pill('Rate: 5.95%', BLUE, '#fff', 44), { x: 360, y: 640 }) +
   A(53.4, 'up', txt(0, 0, 'Pehle $3,500 chhod kar...', 44), { x: 360, y: 760 }) +
-  A(55.3, 'count', txt(0, 0, '≈ −$139', 96, { fill: RED, extra: 'data-n="139" data-pre="≈ −$"' }), { x: 400, y: 890 }) +
+  A(55.3, 'count', txt(0, 0, '≈ −$129', 96, { fill: RED, extra: 'data-n="129" data-pre="≈ −$"' }), { x: 400, y: 890 }) +
   A(55.8, 'up', txt(0, 0, '/ paycheque', 38, { fill: '#666' }), { x: 400, y: 945 }) +
   character({ x: 130, y: 1215, s: .5, pose: [[45.55, 'idle'], [46.6, 'think'], [49.1, 'thumbs'], [51.6, 'point'], [55.3, 'shrug']], expr: [[45.55, 'smile'], [46.6, 'think'], [49.1, 'happy'], [51.6, 'smile'], [55.3, 'worry']], act: [[45.6, 'walk', .9, 260], [49.2, 'nod', .6], [55.4, 'shakehead', .9]], look: [[45.55, 'ur']] }));
 // 9. Employer matches + QPP
 scene(57.58, 64.97,
   A(57.65, 'up', txt(0, 0, 'Lekin ruko... good news!', 52, { fill: GREEN }), { x: 360, y: 170 }) +
   A(59.4, 'up', txt(0, 0, 'Employer bhi daalta hai', 46), { x: 360, y: 290 }) +
-  A(60.2, 'count', txt(0, 0, '+$139', 100, { fill: GREEN, extra: 'data-n="139" data-pre="+$"' }), { x: 360, y: 410 }) +
+  A(60.2, 'count', txt(0, 0, '+$129', 100, { fill: GREEN, extra: 'data-n="129" data-pre="+$"' }), { x: 360, y: 410 }) +
   A(60.0, 'pop', coins(5), { x: 360, y: 640 }) +
   A(61.7, 'pop', pill('Quebec? → QPP', '#8a5cc4', '#fff', 44), { x: 360, y: 770 }) +
   character({ x: 170, y: 1200, s: .55, pose: [[57.58, 'cheer'], [60.2, 'clap'], [61.7, 'thumbs']], expr: [[57.58, 'excited'], [60.2, 'happy'], [61.7, 'wink']], act: [[57.7, 'hop', .45], [60.3, 'clap', 1.3], [61.8, 'hop', .45]], look: [[57.58, 'r']] }) +
@@ -114,8 +114,8 @@ scene(79.18, 96.27,
   A(79.6, 'pop', `<path d="M-280,-40 H280 V560 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 l-20,18 l-20,-18 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`, { x: 360, y: 320 }) +
   row(80.3, 0, 'Gross pay', '$2,308', GREEN) +
   row(83.4, 1, 'Federal tax', '−$205', RED) +
-  row(85.6, 2, 'Provincial tax*', '≈ −$140', RED) +
-  row(88.4, 3, 'CPP', '−$139', RED) +
+  row(85.6, 2, 'Provincial tax*', '≈ −$150', RED) +
+  row(88.4, 3, 'CPP', '−$129', RED) +
   row(90.0, 4, 'EI', '−$38', RED) +
   A(91.2, 'draw', line(120, 0, 600, 0, INK, 5), { y: 760 }) +
   A(92.1, 'count', txt(0, 0, 'NET  $1,786', 80, { fill: GREEN, extra: 'data-n="1786" data-pre="NET  $"' }), { x: 360, y: 840 }) +

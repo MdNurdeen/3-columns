@@ -68,6 +68,7 @@ These caused retakes before. They're now defaults in `dollardesi-template/` and 
 | 6 | Counters ended on rounded values ($2,300 instead of $2,308) | Counters always land on the **exact** number. QA checks it. |
 | 7 | Unclear numbers in the audio | Every derived number goes in `CFG.checks`; QA recomputes them (e.g. net pay, CPP). Unclear numbers are listed for you to confirm **before** the final render. |
 | 8 | Logo ending cut short | Video holds **~1.9 s after the voice ends** so the logo and FOLLOW are readable. |
+| 10 | Speech recognition misheard a number (CPP "129" heard as "139") | Numbers heard from Hindi audio are **never trusted**: each one is re-checked on a short clip in both Hindi and English, and any doubt is marked ❓ in the numbers table for you to confirm before rendering. |
 | 9 | Fixes made in one copy but not the other | Single source of truth: `projects/<name>/scenes.js`. Engine, sounds and character live in the template only. |
 
 ## Workflow (one round of feedback, not five)
