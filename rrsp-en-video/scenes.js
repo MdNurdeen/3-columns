@@ -1,8 +1,10 @@
-// RRSP (English, general Canadian audience, story of "Alex"). No brand/logo.
+// RRSP (English, general Canadian audience, story of "Alex"). Brand: LoonieMath.
 const CFG = {
-  brand: false,
-  voiceEnd: 124.2,
-  endScene: 124.2,
+  brand: true,
+  logo: 'looniemath-logo.png',
+  bg: 'dots',
+  voiceEnd: 127.48,
+  endScene: 124.23,
   tail: 1.9,
   whoosh: [20.35, 38.34, 63.74, 75.84, 90.04, 104.05],
   checks: [
@@ -148,12 +150,19 @@ scene(113.69, 118.14,
   A(116.3, 'stamp', calendar('MARCH', '1', '2027', 220), { x: 360, y: 570, sfx: 'stamp' }) +
   character({ x: 150, y: 1205, s: .52, pose: [[113.69, 'cheeks'], [116.3, 'wag']], expr: [[113.69, 'shock'], [116.3, 'smug']], act: [[113.75, 'jump', .5], [116.4, 'wag', 1.4]], look: [[113.69, 'u'], [116.3, 'ur']] }));
 // 14. Share + disclaimer
-scene(118.14, 999,
+scene(118.14, 124.23,
   A(118.2, 'pop', shareIcon(), { x: 520, y: 300, sfx: 'pop' }) +
   A(118.6, 'up', txt(0, 0, 'Send this to a friend', 54), { x: 360, y: 470 }) +
   A(119.2, 'up', txt(0, 0, 'who just landed', 54, { fill: BLUE }), { x: 360, y: 535 }) +
   A(120.1, 'up', txt(0, 0, '...before they become Alex 😅', 42, { fill: '#666' }), { x: 360, y: 620 }) +
   HL(121.9, 360, 745, 560, 48) +
   A(121.6, 'up', txt(0, 0, 'Education, not financial advice', 40), { x: 360, y: 760 }) +
-  character({ x: 160, y: 1205, s: .52, pose: [[118.14, 'point'], [120.1, 'facepalm'], [121.6, 'hips'], [124.2, 'wave']], expr: [[118.14, 'excited'], [120.1, 'sad'], [121.6, 'smile'], [124.2, 'happy']], act: [[118.2, 'hop', .45], [120.2, 'shakehead', 1.0], [121.7, 'nod', .6], [124.25, 'wave', 1.8]], look: [[118.14, 'ur'], [124.2, 'c']] }) +
-  character({ x: 580, y: 1215, s: .48, ...FR, pose: [[122.6, 'idle'], [124.2, 'wave']], expr: [[122.6, 'smile'], [124.2, 'happy']], act: [[122.6, 'walk', 1.0, -260], [124.25, 'wave', 1.8]], look: [[122.6, 'l'], [124.2, 'c']], from: 122.6 }));
+  character({ x: 160, y: 1205, s: .52, pose: [[118.14, 'point'], [120.1, 'facepalm'], [121.6, 'hips']], expr: [[118.14, 'excited'], [120.1, 'sad'], [121.6, 'smile']], act: [[118.2, 'hop', .45], [120.2, 'shakehead', 1.0], [121.7, 'nod', .6]], look: [[118.14, 'ur']] }));
+// 15. Follow LoonieMath (logo reveal comes from the engine at the top)
+scene(124.23, 999,
+  A(124.3, 'pop', '', { sfx: 'sparkle' }) +
+  A(124.75, 'stamp', pill('FOLLOW', BLUE, '#fff', 74, 44), { x: 320, y: 600 }) +
+  A(125.2, 'pop', bell(), { x: 600, y: 590, s: .75, sfx: 'bell' }) +
+  A(125.6, 'up', txt(0, 0, 'Money stories, every day', 46, { fill: '#666' }), { x: 360, y: 720 }) +
+  character({ x: 220, y: 1200, s: .6, pose: [[124.23, 'wave'], [126.6, 'thumbs']], expr: [[124.23, 'happy'], [124.75, 'excited'], [126.6, 'wink']], act: [[124.3, 'wave', 1.6], [124.75, 'hop', .45], [126.6, 'spin', .6]] }) +
+  character({ x: 540, y: 1210, s: .52, ...FR, pose: [[124.23, 'cheer'], [126.6, 'thumbs']], expr: [[124.23, 'excited'], [126.6, 'happy']], act: [[124.4, 'hops', 1.5]] }));

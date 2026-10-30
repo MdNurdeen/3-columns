@@ -1,5 +1,8 @@
 # DollarDesi Video Style Brief
 
+> **Brand update (Oct 2026): the channel is now LoonieMath.** English videos for a general Canadian audience. Mascot: **Alex**, the classic stick figure (white shirt, blue tie, curly hair), not a hoodie. Dotted background (`bg: 'dots'`), **no corner watermark**, LoonieMath logo reveal + FOLLOW at the end (`logo: 'looniemath-logo.png'`). Never use the DollarDesi name or logo in new videos.
+
+
 Paste this into a new chat along with your voiceover MP3 (or a topic).
 
 ---
