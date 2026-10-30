@@ -6,8 +6,11 @@
 set -euo pipefail
 T="$(cd "$(dirname "$0")" && pwd)"; P="$(cd "$1" && pwd)"; VO="$2"; MODE="${3:-preview}"
 for f in engine.html logo.png kalam-latin-400-normal.woff2 kalam-latin-700-normal.woff2; do ln -sf "$T/$f" "$P/$f"; done
-ffmpeg -v error -y -i "$VO" -ar 44100 "$P/vo44.wav"
-ffmpeg -v error -y -i "$VO" -ac 1 -ar 16000 "$P/vo16.wav"
+# level the voiceover first: no section louder/quieter than the rest (e.g. a hot-recorded hook)
+ffmpeg -v error -y -i "$VO" -ar 44100 "$P/vo_raw.wav"
+python3 "$T/level_voice.py" "$P/vo_raw.wav" "$P/vo_lev.wav"
+ffmpeg -v error -y -i "$P/vo_lev.wav" -af "acompressor=threshold=-18dB:ratio=2.5:attack=8:release=180:makeup=1.5" "$P/vo44.wav"
+ffmpeg -v error -y -i "$P/vo44.wav" -ac 1 -ar 16000 "$P/vo16.wav"
 node "$T/render.js" "$P" cues                       # writes cfg.json (frame count)
 python3 - "$P" <<'PY'
 import sys, json, numpy as np, soundfile as sf
@@ -34,5 +37,6 @@ PY
 fi
 node "$T/render.js" "$P" cues
 (cd "$P" && python3 "$T/sfx.py" vo44.wav && ffmpeg -v error -y -i mix_raw.wav -af "loudnorm=I=-14:TP=-1.5:LRA=11" -ar 44100 mix.wav)
+python3 "$T/check_audio.py" "$P/mix.wav" || { [ "${FORCE:-0}" = 1 ] || exit 1; }
 node "$T/render.js" "$P" full "$P/mix.wav" "$P/video.mp4"
 echo "Done: $P/video.mp4"
