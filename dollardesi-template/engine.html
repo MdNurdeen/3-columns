@@ -34,6 +34,7 @@ text{font-family:K;}
 </svg>
 <script>
 const AMP = window.AMP || [];
+const HB = '#1e5bd8', HB2 = '#1747ad';
 const INK = '#1b1b1b', BLUE = '#3d8bd4', RED = '#e0443b', GREEN = '#3fae49';
 
 // ---------- helpers ----------
@@ -109,7 +110,7 @@ const HP = { // hand targets [x, y, handShape], character space (feet = 0,0)
 const LOOK = { c: [0, 0], r: [7, 0], l: [-7, 0], u: [0, -6], ur: [6, -5], ul: [-6, -5], d: [0, 5], dl: [-6, 4], dr: [6, 4] };
 let charId = 0;
 const character = (o) => `<g class="char" id="c${charId++}" data-x="${o.x}" data-y="${o.y}" data-s="${o.s || 1}" data-flip="${o.flip ? -1 : 1}"
-  data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-act='${JSON.stringify(o.act || [])}' data-look='${JSON.stringify(o.look || [[0, 'c']])}' data-tie="${o.tie || BLUE}" data-acc="${o.acc || ''}" data-from="${o.from ?? -1}"></g>`;
+  data-pose='${JSON.stringify(o.pose)}' data-expr='${JSON.stringify(o.expr)}' data-act='${JSON.stringify(o.act || [])}' data-look='${JSON.stringify(o.look || [[0, 'c']])}' data-tie="${o.tie || BLUE}" data-outfit="${o.outfit || (o.tie ? 'shirt' : 'hoodie')}" data-acc="${o.acc || ''}" data-from="${o.from ?? -1}"></g>`;
 
 function ik(sx, sy, hx, hy, side) {
   let dx = hx - sx, dy = hy - sy, d = Math.hypot(dx, dy); const mx = L1 + L2 - 1;
@@ -120,13 +121,14 @@ function ik(sx, sy, hx, hy, side) {
   const e = side * e1[0] + .35 * e1[1] > side * e2[0] + .35 * e2[1] ? e1 : e2;
   return { ex: e[0], ey: e[1], hx, hy };
 }
-function hand(x, y, ux, uy, shape) {
+function hand(x, y, ux, uy, shape, white) {
+  const fing = (x2, y2, w) => white ? `<path d="M${x},${y} L${x2},${y2}" stroke="${INK}" stroke-width="${w + 6}" stroke-linecap="round"/><path d="M${x},${y} L${x2},${y2}" stroke="#fff" stroke-width="${w}" stroke-linecap="round"/>` : `<path d="M${x},${y} L${x2},${y2}" stroke="${INK}" stroke-width="${w}" stroke-linecap="round"/>`;
   const r = (a, l) => { const c = Math.cos(a), s = Math.sin(a); return [x + (ux * c - uy * s) * l, y + (ux * s + uy * c) * l]; };
   let h = '';
-  if (shape === 'point') { const [fx, fy] = r(0, 24); h += `<path d="M${x},${y} L${fx},${fy}" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>`; }
-  if (shape === 'thumb') h += `<path d="M${x},${y} L${x},${y - 28}" stroke="${INK}" stroke-width="10" stroke-linecap="round"/>`;
-  if (shape === 'open') for (const a of [-.7, 0, .7]) { const [fx, fy] = r(a, 19); h += `<path d="M${x},${y} L${fx},${fy}" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>`; }
-  return h + `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 11 : 13}" fill="${INK}"/>`;
+  if (shape === 'point') { const [fx, fy] = r(0, 26); h += fing(fx, fy, 7); }
+  if (shape === 'thumb') h += fing(x, y - 28, 10);
+  if (shape === 'open') for (const a of [-.7, 0, .7]) { const [fx, fy] = r(a, 20); h += fing(fx, fy, 6); }
+  return h + (white ? `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 13 : 14}" fill="#fff" stroke="${INK}" stroke-width="4"/>` : `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 11 : 13}" fill="${INK}"/>`);
 }
 const star5 = (r, fill = '#ffd43b') => { let p = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; p += (i ? 'L' : 'M') + (Math.cos(a) * rr).toFixed(1) + ',' + (Math.sin(a) * rr).toFixed(1); } return `<path d="${p}Z" fill="${fill}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`; };
 const spark4 = (r) => `<path d="M0,${-r} Q2,-2 ${r},0 Q2,2 0,${r} Q-2,2 ${-r},0 Q-2,-2 0,${-r}Z" fill="#ffd43b" stroke="${INK}" stroke-width="2.5"/>`;
@@ -234,7 +236,9 @@ function drawChar(c, t, amp) {
     const sx = side * SHX, sy = SHY;
     const r = ik(sx, sy, hx, hy, side);
     let ux = r.hx - r.ex, uy = r.hy - r.ey; const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
-    arms += `<path d="M${sx},${sy} Q${(sx + r.ex) / 2 + side * 3},${(sy + r.ey) / 2 + 3} ${r.ex},${r.ey} L${r.hx},${r.hy}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` + hand(r.hx, r.hy, ux, uy, (k > .5 ? b : a)[2]);
+    const armD = `M${sx},${sy} Q${(sx + r.ex) / 2 + side * 3},${(sy + r.ey) / 2 + 3} ${r.ex},${r.ey} L${r.hx},${r.hy}`, HOOD = d.outfit === 'hoodie';
+    arms += (HOOD ? `<path d="${armD}" stroke="${INK}" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${armD}" stroke="${HB}" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+      : `<path d="${armD}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`) + hand(r.hx, r.hy, ux, uy, (k > .5 ? b : a)[2], HOOD);
   }
   const blink = ((t + +d.x * .01) % 3.3) < .11 ? .12 : 1;
   const lk = LOOK[lookup(P.look, t).cur[1]] || [0, 0];
@@ -246,10 +250,15 @@ function drawChar(c, t, amp) {
   c.innerHTML = `<ellipse cx="0" cy="2" rx="${125 * shadowS}" ry="${15 * shadowS}" fill="#000" opacity=".09"/>${lines}
    <g transform="translate(0,${-jy}) rotate(${rot}) scale(${sqx},${sqy})">
     ${legs}
-    <path d="M-44,-388 Q-58,-300 -64,-196 L64,-196 Q58,-300 44,-388 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+${d.outfit === 'hoodie' ? `    <path d="M-44,-388 Q-60,-300 -66,-196 L66,-196 Q60,-300 44,-388 Z" fill="${HB}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M-42,-372 Q-56,-290 -60,-202 L-42,-202 Q-40,-300 -30,-374 Z" fill="${HB2}"/>
+    <path d="M-64,-210 L64,-210" stroke="${HB2}" stroke-width="7"/>
+    <path d="M-40,-262 L40,-262 L48,-222 L-48,-222 Z" fill="none" stroke="${HB2}" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M-60,-392 Q-62,-352 0,-338 Q62,-352 60,-392" fill="${HB}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+    <g transform="rotate(${tie * .6},0,-360)"><path d="M-12,-356 L-15,-318 M12,-356 L15,-318" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/><circle cx="-15" cy="-316" r="3.5" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="15" cy="-316" r="3.5" fill="#fff" stroke="${INK}" stroke-width="2"/></g>` : `    <path d="M-44,-388 Q-58,-300 -64,-196 L64,-196 Q58,-300 44,-388 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
     <path d="M-42,-370 Q-54,-290 -58,-200 L-40,-200 Q-38,-300 -30,-372 Z" fill="#e8e8e8"/>
     <path d="M-20,-388 L0,-366 L20,-388" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
-    <g transform="rotate(${tie},0,-372)"><path d="M-9,-374 L9,-374 L6,-360 L-6,-360 Z M-6,-360 L-14,-270 L0,-250 L14,-270 L6,-360 Z" fill="${d.tie}" stroke="#1d3f66" stroke-width="3.5" stroke-linejoin="round"/></g>
+    <g transform="rotate(${tie},0,-372)"><path d="M-9,-374 L9,-374 L6,-360 L-6,-360 Z M-6,-360 L-14,-270 L0,-250 L14,-270 L6,-360 Z" fill="${d.tie}" stroke="#1d3f66" stroke-width="3.5" stroke-linejoin="round"/></g>`}
     <g transform="translate(0,${-470 + nod}) rotate(${hrot}) scale(${pop})">
       <path d="M-4,-84 C-14,-122 26,-128 20,-102 C16,-88 -2,-94 6,-108" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>
       <path d="M-22,-82 C-30,-104 -12,-112 -10,-96" stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
@@ -349,7 +358,7 @@ const BG = {
     <g filter="url(#bgBlur)" opacity=".55"><circle class="blob" data-k="0" cx="120" cy="230" r="210" fill="#bcd8f5"/><circle class="blob" data-k="1" cx="640" cy="620" r="230" fill="#c9ecd2"/><circle class="blob" data-k="2" cx="200" cy="1120" r="220" fill="#ffe2b8"/></g>
     <rect class="bgDrift" x="-60" y="-60" width="840" height="1400" fill="url(#bgDots)" opacity=".7"/>`,
 };
-function bgInit() { document.getElementById('bg').innerHTML = (BG[CFG.bg || 'grid'] || BG.grid)(); }
+function bgInit() { document.getElementById('bg').innerHTML = (BG[CFG.bg || 'dots'] || BG.dots)(); }
 function bgRender(t) {
   for (const el of document.querySelectorAll('#bg .bgDrift')) el.setAttribute('transform', `translate(${(t * 4) % 30},${(t * 6) % 30})`);
   for (const el of document.querySelectorAll('#bg .blob')) { const k = +el.dataset.k; el.setAttribute('transform', `translate(${Math.sin(t * .15 + k * 2) * 60},${Math.cos(t * .12 + k) * 70})`); }
@@ -366,7 +375,7 @@ window.render = function (t) {
   document.getElementById('prog').setAttribute('width', 720 * clamp(t / VEND));
   const LT = LOGO_T, el = document.getElementById('endlogo');
   const BRAND = CFG.brand !== false;   // brand:false = no logo watermark, no logo ending
-  document.getElementById('wm').style.display = !BRAND || t >= END_S ? 'none' : '';
+  document.getElementById('wm').style.display = !BRAND || !CFG.watermark || t >= END_S ? 'none' : '';
   el.style.display = BRAND && t >= LT ? '' : 'none';
   if (t >= LT) { const p = clamp((t - LT) / .55); el.setAttribute('transform', `translate(360,${300 + Math.sin(t * 2.4) * 4}) scale(${eBack(p)}) rotate(${(1 - eOut(p)) * -25})`); }
   scenes.forEach((sc, i) => {

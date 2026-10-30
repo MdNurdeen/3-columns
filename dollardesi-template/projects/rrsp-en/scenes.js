@@ -2,7 +2,7 @@
 const CFG = {
   brand: true,
   logo: 'looniemath-logo.png',
-  bg: 'grid',
+  bg: 'dots',
   voiceEnd: 127.48,
   endScene: 124.23,
   tail: 1.9,
