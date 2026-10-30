@@ -34,7 +34,7 @@ text{font-family:K;}
 </svg>
 <script>
 const AMP = window.AMP || [];
-const HB = '#1e5bd8', HB2 = '#1747ad';
+const HB = '#1e5bd8', HB2 = '#1747ad', NV = '#101c3f', DEN = '#1f3c78', DEN2 = '#2b4f98', STITCH = '#86a3d6';
 const INK = '#1b1b1b', BLUE = '#3d8bd4', RED = '#e0443b', GREEN = '#3fae49';
 
 // ---------- helpers ----------
@@ -122,13 +122,13 @@ function ik(sx, sy, hx, hy, side) {
   return { ex: e[0], ey: e[1], hx, hy };
 }
 function hand(x, y, ux, uy, shape, white) {
-  const fing = (x2, y2, w) => white ? `<path d="M${x},${y} L${x2},${y2}" stroke="${INK}" stroke-width="${w + 6}" stroke-linecap="round"/><path d="M${x},${y} L${x2},${y2}" stroke="#fff" stroke-width="${w}" stroke-linecap="round"/>` : `<path d="M${x},${y} L${x2},${y2}" stroke="${INK}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const fing = (x2, y2, w) => white ? `<path d="M${x},${y} L${x2},${y2}" stroke="${NV}" stroke-width="${w * 1.6 + 9}" stroke-linecap="round"/><path d="M${x},${y} L${x2},${y2}" stroke="#fff" stroke-width="${w * 1.6}" stroke-linecap="round"/>` : `<path d="M${x},${y} L${x2},${y2}" stroke="${INK}" stroke-width="${w}" stroke-linecap="round"/>`;
   const r = (a, l) => { const c = Math.cos(a), s = Math.sin(a); return [x + (ux * c - uy * s) * l, y + (ux * s + uy * c) * l]; };
   let h = '';
-  if (shape === 'point') { const [fx, fy] = r(0, 26); h += fing(fx, fy, 7); }
-  if (shape === 'thumb') h += fing(x, y - 28, 10);
+  if (shape === 'point') { const [fx, fy] = r(0, white ? 36 : 26); h += fing(fx, fy, 7); }
+  if (shape === 'thumb') h += fing(x, y - (white ? 34 : 28), white ? 7 : 10);
   if (shape === 'open') for (const a of [-.7, 0, .7]) { const [fx, fy] = r(a, 20); h += fing(fx, fy, 6); }
-  return h + (white ? `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 13 : 14}" fill="#fff" stroke="${INK}" stroke-width="4"/>` : `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 11 : 13}" fill="${INK}"/>`);
+  return h + (white ? `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 18 : 20}" fill="#fff" stroke="${NV}" stroke-width="5.5"/><path d="M${x - 8},${y + 6} q6,6 14,2" stroke="${NV}" stroke-width="3" fill="none" stroke-linecap="round"/>` : `<circle cx="${x}" cy="${y}" r="${shape === 'open' ? 11 : 13}" fill="${INK}"/>`);
 }
 const star5 = (r, fill = '#ffd43b') => { let p = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; p += (i ? 'L' : 'M') + (Math.cos(a) * rr).toFixed(1) + ',' + (Math.sin(a) * rr).toFixed(1); } return `<path d="${p}Z" fill="${fill}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`; };
 const spark4 = (r) => `<path d="M0,${-r} Q2,-2 ${r},0 Q2,2 0,${r} Q-2,2 ${-r},0 Q-2,-2 0,${-r}Z" fill="#ffd43b" stroke="${INK}" stroke-width="2.5"/>`;
@@ -220,12 +220,22 @@ function drawChar(c, t, amp) {
   const sqx = 1 / Math.sqrt(sqy);
   c.setAttribute('transform', `translate(${+d.x + wx * d.s},${+d.y}) scale(${d.s * d.flip * spin},${d.s})`);
   // legs
-  let legs = '';
+  let legs = '', jOut = '', jFill = '', jShoe = '';
   for (const s of [-1, 1]) {
     let lift = 0; if (walkPh !== null) lift = Math.max(0, Math.sin(walkPh + (s > 0 ? Math.PI : 0))) * 34; if (air) lift = Math.max(lift, 22);
     const hx = s * 22, hy = -205, fx = s * (30 + (air ? 8 : 0)), fy = -6 - lift, kx = s * (26 + lift * .9), ky = (hy + fy) / 2;
+    if (d.outfit === 'hoodie') {
+      const jx = s * 30, jy = -186, ax = s * (36 + (air ? 6 : 0)), ay = fy - 22, jk = s * (32 + lift * .9), jky = (jy + ay) / 2;
+      const legD = `M${jx},${jy} Q${jk},${jky} ${ax},${ay}`;
+      jOut += `<path d="${legD}" stroke="${NV}" stroke-width="40" fill="none"/>`;
+      jFill += `<path d="${legD}" stroke="${DEN}" stroke-width="29" fill="none"/>`
+        + `<path d="M${jx + s * 6},${jy} Q${jk + s * 6},${jky} ${ax + s * 6},${ay}" stroke="${STITCH}" stroke-width="2" stroke-dasharray="6 5" fill="none"/>`
+        + `<path d="M${jk - 10},${jky + 8} q8,-4 18,0" stroke="${DEN2}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+      jShoe += `<g transform="translate(${ax + s * 4},${fy - 4}) scale(${s},1)"><path d="M-26,-4 Q-28,-30 -4,-32 Q18,-34 36,-16 Q48,-8 46,0 L-24,0 Q-28,0 -26,-4 Z" fill="${HB}" stroke="${NV}" stroke-width="5" stroke-linejoin="round"/><path d="M-28,-2 L48,-2 Q50,8 42,10 L-22,10 Q-30,8 -28,-2 Z" fill="#fff" stroke="${NV}" stroke-width="4.5" stroke-linejoin="round"/><path d="M2,-26 l10,6 M10,-29 l10,6 M18,-27 l9,6" stroke="${NV}" stroke-width="3.5" stroke-linecap="round"/></g>`;
+    } else
     legs += `<path d="M${hx},${hy} Q${kx},${ky} ${fx},${fy}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round"/><ellipse cx="${fx + s * 10}" cy="${fy - 2}" rx="21" ry="9.5" fill="${INK}"/>`;
   }
+  if (d.outfit === 'hoodie') legs = jOut + `<path d="M-51,-212 L51,-212 L50,-176 Q26,-166 0,-170 Q-26,-166 -50,-176 Z" fill="${DEN}" stroke="${NV}" stroke-width="5.5" stroke-linejoin="round"/>` + jFill + jShoe + `<path d="M0,-206 L0,-168 M-46,-204 q8,14 22,14 M46,-204 q-8,14 -22,14" stroke="${STITCH}" stroke-width="2" stroke-dasharray="5 4" fill="none"/>`;
   // arms
   let arms = '';
   for (const [key, side] of [['R', 1], ['L', -1]]) {
@@ -233,14 +243,14 @@ function drawChar(c, t, amp) {
     let hx = a[0] + (b[0] - a[0]) * k + off[key][0], hy = a[1] + (b[1] - a[1]) * k + off[key][1];
     const g = (key === 'R' ? Math.sin(t * 3.1) : Math.sin(t * 2.7 + 1)) * 5 + amp * 14 * (key === 'R' ? Math.sin(t * 7) : Math.cos(t * 6));
     hx += g * .6; hy += g;
-    const sx = side * (d.outfit === 'hoodie' ? 60 : SHX), sy = d.outfit === 'hoodie' ? -358 : SHY;
+    const sx = side * (d.outfit === 'hoodie' ? 66 : SHX), sy = d.outfit === 'hoodie' ? -362 : SHY;
     if (d.outfit === 'hoodie') { hx += side * 22; hy += hy > -300 ? 24 : 8; }   // hoodie shoulders sit wider: let arms hang naturally
     const r = ik(sx, sy, hx, hy, side);
     let ux = r.hx - r.ex, uy = r.hy - r.ey; const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
     const armD = `M${sx},${sy} Q${(sx + r.ex) / 2 + side * 3},${(sy + r.ey) / 2 + 3} ${r.ex},${r.ey} L${r.hx},${r.hy}`, HOOD = d.outfit === 'hoodie';
-    const wx = r.hx - ux * 15, wy = r.hy - uy * 15, cx2 = r.hx - ux * 4, cy2 = r.hy - uy * 4;
-    arms += (HOOD ? `<path d="${armD}" stroke="${INK}" stroke-width="30" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${armD}" stroke="${HB}" stroke-width="21" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
-        + `<path d="M${wx},${wy} L${cx2},${cy2}" stroke="${INK}" stroke-width="31" stroke-linecap="round"/><path d="M${wx},${wy} L${cx2},${cy2}" stroke="${HB2}" stroke-width="22" stroke-linecap="round"/>`
+    const wx = r.hx - ux * 22, wy = r.hy - uy * 22, cx2 = r.hx - ux * 8, cy2 = r.hy - uy * 8;
+    arms += (HOOD ? `<path d="${armD}" stroke="${NV}" stroke-width="40" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${armD}" stroke="${HB}" stroke-width="29" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+        + `<path d="M${wx},${wy} L${cx2},${cy2}" stroke="${NV}" stroke-width="40" stroke-linecap="round"/><path d="M${wx},${wy} L${cx2},${cy2}" stroke="${HB}" stroke-width="29" stroke-linecap="round"/>`
       : `<path d="${armD}" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`) + hand(r.hx, r.hy, ux, uy, (k > .5 ? b : a)[2], HOOD);
   }
   const blink = ((t + +d.x * .01) % 3.3) < .11 ? .12 : 1;
@@ -253,23 +263,23 @@ function drawChar(c, t, amp) {
   c.innerHTML = `<ellipse cx="0" cy="2" rx="${125 * shadowS}" ry="${15 * shadowS}" fill="#000" opacity=".09"/>${lines}
    <g transform="translate(0,${-jy}) rotate(${rot}) scale(${sqx},${sqy})">
     ${legs}
-${d.outfit === 'hoodie' ? `    <path d="M-52,-384 C-90,-380 -100,-352 -96,-306 L-88,-212 Q-87,-196 -72,-196 L72,-196 Q87,-196 88,-212 L96,-306 C100,-352 90,-380 52,-384 Z" fill="${HB}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M-50,-378 C-82,-372 -90,-348 -86,-306 L-80,-206 L-60,-206 L-64,-310 C-66,-346 -58,-368 -36,-376 Z" fill="${HB2}" opacity=".85"/>
-    <path d="M-86,-218 L86,-218" stroke="#113a8f" stroke-width="5" stroke-linecap="round"/>
-    <path d="M-50,-272 L50,-272 Q58,-246 54,-226 L-54,-226 Q-58,-246 -50,-272 Z" fill="${HB2}" stroke="#113a8f" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M-50,-272 Q-40,-252 -54,-232 M50,-272 Q40,-252 54,-232" stroke="#113a8f" stroke-width="3.5" fill="none"/>
-    <path d="M-36,-330 q8,18 2,40 M40,-326 q-6,16 0,34" stroke="#113a8f" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
-    <path d="M-88,-400 C-100,-356 -60,-336 0,-336 C60,-336 100,-356 88,-400 C60,-374 -60,-374 -88,-400 Z" fill="${HB2}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M-70,-388 C-50,-366 50,-366 70,-388" stroke="#113a8f" stroke-width="3" fill="none"/>
-    <g transform="rotate(${tie * .6},0,-344)"><path d="M-14,-346 L-18,-298 M14,-346 L18,-298" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="M-14,-346 L-18,-298 M14,-346 L18,-298" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="-18" cy="-296" r="5" fill="#fff" stroke="${INK}" stroke-width="2.5"/><circle cx="18" cy="-296" r="5" fill="#fff" stroke="${INK}" stroke-width="2.5"/></g>` : `    <path d="M-44,-388 Q-58,-300 -64,-196 L64,-196 Q58,-300 44,-388 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
+${d.outfit === 'hoodie' ? `
+    <path d="M-80,-372 C-100,-404 -78,-430 -40,-424 L40,-424 C78,-430 100,-404 80,-372 Z" fill="${HB2}" stroke="${NV}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M-36,-394 C-74,-392 -94,-372 -98,-330 L-92,-238 L92,-238 L98,-330 C94,-372 74,-392 36,-394 Z" fill="${HB}" stroke="${NV}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M-90,-240 L90,-240 L88,-208 Q86,-198 74,-198 L-74,-198 Q-86,-198 -88,-208 Z" fill="${HB}" stroke="${NV}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M-48,-300 L48,-300 Q58,-272 62,-250 L-62,-250 Q-58,-272 -48,-300 Z" fill="none" stroke="${NV}" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M-22,-392 L0,-360 L22,-392 Z" fill="#fff" stroke="${NV}" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M-38,-394 L0,-352 L38,-394" fill="none" stroke="${NV}" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+    <g transform="rotate(${tie * .6},0,-364)"><path d="M-16,-368 L-18,-318 M16,-368 L18,-318" stroke="${NV}" stroke-width="5.5" stroke-linecap="round"/></g>
+    <path d="M60,-330 q8,30 4,60" stroke="${NV}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".6"/>` : `    <path d="M-44,-388 Q-58,-300 -64,-196 L64,-196 Q58,-300 44,-388 Z" fill="#fff" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
     <path d="M-42,-370 Q-54,-290 -58,-200 L-40,-200 Q-38,-300 -30,-372 Z" fill="#e8e8e8"/>
     <path d="M-20,-388 L0,-366 L20,-388" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
     <g transform="rotate(${tie},0,-372)"><path d="M-9,-374 L9,-374 L6,-360 L-6,-360 Z M-6,-360 L-14,-270 L0,-250 L14,-270 L6,-360 Z" fill="${d.tie}" stroke="#1d3f66" stroke-width="3.5" stroke-linejoin="round"/></g>`}
     <g transform="translate(0,${-470 + nod}) rotate(${hrot}) scale(${pop})">
-      <path d="M-4,-84 C-14,-122 26,-128 20,-102 C16,-88 -2,-94 6,-108" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>
-      <path d="M-22,-82 C-30,-104 -12,-112 -10,-96" stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-      <circle r="86" fill="${F.tint}" stroke="${INK}" stroke-width="5"/>
-      <path d="M-62,10 A62,62 0 0 0 40,60" fill="none" stroke="#ececec" stroke-width="12" stroke-linecap="round"/>
+      ${d.outfit === 'hoodie' ? '' : `<path d="M-4,-84 C-14,-122 26,-128 20,-102 C16,-88 -2,-94 6,-108" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-22,-82 C-30,-104 -12,-112 -10,-96" stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`}
+      <circle r="86" fill="${F.tint}" stroke="${d.outfit === 'hoodie' ? NV : INK}" stroke-width="${d.outfit === 'hoodie' ? 6 : 5}"/>
+      <path d="M-62,10 A62,62 0 0 0 40,60" fill="none" stroke="${d.outfit === 'hoodie' ? '#dce7f6' : '#ececec'}" stroke-width="12" stroke-linecap="round"/>
       <ellipse cx="-50" cy="20" rx="15" ry="9" fill="#ff9fb0" opacity="${ex === 'happy' || ex === 'excited' || ex === 'wink' || ex === 'angry' ? .8 : .5}"/>
       <ellipse cx="50" cy="20" rx="15" ry="9" fill="#ff9fb0" opacity="${ex === 'happy' || ex === 'excited' || ex === 'wink' || ex === 'angry' ? .8 : .5}"/>
       ${F.brows}${F.eyes}${F.mouth}${d.acc === 'boss' || d.acc === 'glasses' ? `<g fill="none" stroke="${INK}" stroke-width="4.5"><circle cx="-28" cy="-10" r="20"/><circle cx="28" cy="-10" r="20"/><path d="M-8,-12 Q0,-18 8,-12 M-48,-14 L-80,-20 M48,-14 L80,-20"/></g>` : ''}${d.acc === 'boss' ? `<path d="M-30,22 Q-15,8 0,18 Q15,8 30,22 Q15,30 0,24 Q-15,30 -30,22Z" fill="#5a3d2b" stroke="${INK}" stroke-width="3"/>` : ''}${F.emo}
