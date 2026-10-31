@@ -1,0 +1,151 @@
+<!doctype html><meta charset=utf-8>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Barlow+Semi+Condensed:wght@500;600;700&family=Libre+Caslon+Text:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#141418;color:#ece6d8;font-family:'Barlow Semi Condensed'}
+.mono{font-family:'IBM Plex Mono';letter-spacing:4px;text-transform:uppercase}
+#tag{position:absolute;left:80px;top:230px;font-size:20px;color:#d9d3c4}
+#tag:before{content:'';display:inline-block;width:8px;height:8px;background:#b8975a;margin-right:12px;vertical-align:middle}
+#hdl{position:absolute;right:80px;top:230px;font-size:20px;color:#8a7650;letter-spacing:1px;text-transform:none}
+#src{position:absolute;left:80px;right:80px;top:1480px;font-size:15px;color:#5f5b52}
+.glow{position:absolute;left:540px;top:900px;width:900px;height:900px;margin:-450px;border-radius:50%;background:radial-gradient(circle,rgba(184,151,90,.16),transparent 65%)}
+svg#art{position:absolute;left:0;top:0}
+.lbl{position:absolute;text-align:center;transform:translateX(-50%)}
+.num{font-weight:600;font-size:76px;letter-spacing:-1px;line-height:1}
+.sub{font-size:20px;color:#a39d90;margin-top:8px}
+.rc{position:absolute;background:#ece6d8;color:#141418;padding:20px 30px 32px;width:430px;clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),95% 100%,90% calc(100% - 14px),85% 100%,80% calc(100% - 14px),75% 100%,70% calc(100% - 14px),65% 100%,60% calc(100% - 14px),55% 100%,50% calc(100% - 14px),45% 100%,40% calc(100% - 14px),35% 100%,30% calc(100% - 14px),25% 100%,20% calc(100% - 14px),15% 100%,10% calc(100% - 14px),5% 100%,0 calc(100% - 14px))}
+.rc .h{font-size:15px;color:#7b7568;margin-bottom:8px}
+.rc .r{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px}
+.rc .r span:first-child{font-family:"IBM Plex Mono";font-size:17px;letter-spacing:3px;text-transform:uppercase}
+.rc .r span:last-child{font-size:38px;font-weight:600}
+.rc .t{border-top:2px dashed #9a9488;margin-top:18px;padding-top:12px}
+.bar{position:absolute;left:110px;width:860px;height:110px;border:2px solid #4a463e;display:flex;overflow:hidden}
+.bar i{display:block;height:100%}
+.ig{position:absolute;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:26px;font-weight:700;letter-spacing:.5px}
+.ig b{width:56px;height:56px;border:5px solid #ece6d8;border-radius:16px;position:relative}
+.ig b:before{content:'';position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px;border:5px solid #ece6d8;border-radius:50%}
+.ig b:after{content:'';position:absolute;right:6px;top:6px;width:6px;height:6px;border-radius:50%;background:#ece6d8}
+.serif{font-family:'Libre Caslon Text'}
+.box{position:absolute;border:2px solid #4a463e;border-radius:10px;background:#1b1b20;padding:24px}
+</style>
+<div class="glow" id="glow"></div>
+<div id="tag" class="mono">The loan</div><div id="hdl" class="mono">@yourhandle</div>
+<svg id="art" width="1080" height="1920" fill="none" stroke-linecap="round" stroke-linejoin="round">
+ <defs>
+  <pattern id="hg" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="16" height="16" fill="#b8975a" fill-opacity=".85"/><line x1="0" y1="0" x2="0" y2="16" stroke="#8d7140" stroke-width="5"/></pattern>
+  <pattern id="hr" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="16" height="16" fill="#a34a42" fill-opacity=".8"/><line x1="0" y1="0" x2="0" y2="16" stroke="#7d3530" stroke-width="5"/></pattern>
+  <pattern id="hd" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="14" stroke="#3a3832" stroke-width="2"/></pattern>
+  <clipPath id="inner"><rect x="392" y="860" width="296" height="420"/></clipPath>
+ </defs>
+ <g id="house" stroke="#ece6d8" stroke-width="4">
+  <rect x="392" y="860" width="296" height="420" fill="url(#hd)" stroke="none" id="hbg"/>
+  <g clip-path="url(#inner)"><rect id="fillG" x="392" y="1280" width="296" height="0" fill="url(#hg)" stroke="none"/><rect id="fillR" x="392" y="1280" width="296" height="0" fill="url(#hr)" stroke="none"/></g>
+  <path class="d" d="M370 1280 V860 M710 1280 V860"/>
+  <path class="d" d="M350 870 L540 700 L730 870 Z" fill="#232228"/>
+  <path class="d" d="M630 760 V705 H668 V795"/>
+  <circle class="d" cx="540" cy="800" r="20"/><path class="d" d="M520 800 H560 M540 780 V820"/>
+  <path class="d" d="M510 1280 V1195 H570 V1280" fill="#b8975a" fill-opacity=".9"/>
+  <path class="d" d="M330 1282 H750"/>
+  <path class="d" stroke-width="2" stroke="#6b665c" d="M340 1300 l-14 14 M370 1300 l-14 14 M400 1300 l-14 14 M430 1300 l-14 14 M460 1300 l-14 14 M490 1300 l-14 14 M520 1300 l-14 14 M550 1300 l-14 14 M580 1300 l-14 14 M610 1300 l-14 14 M640 1300 l-14 14 M670 1300 l-14 14 M700 1300 l-14 14 M730 1300 l-14 14"/>
+  <path class="d" stroke="#7fa37a" stroke-width="3" d="M400 1280 q-6 -40 25 -40 q30 0 25 40 M630 1280 q-6 -40 25 -40 q30 0 25 40"/>
+ </g>
+ <g id="bank" stroke="#ece6d8" stroke-width="3.5">
+  <path class="d" d="M800 1010 L860 975 L920 1010 Z M805 1020 H915 M815 1030 V1090 M845 1030 V1090 M875 1030 V1090 M905 1030 V1090 M800 1100 H920"/>
+ </g>
+ <g id="cal" stroke="#ece6d8" stroke-width="3.5">
+  <path class="d" d="M140 1000 h120 v110 h-120 z M140 1030 h120 M170 985 v28 M230 985 v28"/>
+ </g>
+ <line id="limit" x1="360" y1="0" x2="720" y2="0" stroke="#ece6d8" stroke-width="3" stroke-dasharray="12 10" opacity="0"/>
+</svg>
+<div class="lbl" id="price" style="left:540px;top:560px"><div class="num" id="priceN">$0</div><div class="sub mono" id="priceL">Borrowed</div></div>
+<div class="lbl" id="lblG" style="left:540px"><div class="num" style="font-size:46px" id="lblGN">$500,000</div><div class="sub mono">Loan</div></div>
+<div class="lbl" id="lblR" style="left:540px"><div class="num" style="font-size:46px" id="lblRN">$0</div><div class="sub mono" style="color:#e9c3bd">Interest</div></div>
+<div class="mono" id="calL" style="position:absolute;left:120px;top:1130px;width:160px;text-align:center;font-size:16px;color:#a39d90">30 years</div>
+<div class="mono" id="bankL" style="position:absolute;left:770px;top:1120px;width:180px;text-align:center;font-size:16px;color:#a39d90">The bank</div>
+<div class="rc" id="rc1" style="right:60px;top:280px"><div class="h mono">The deal</div>
+ <div class="r"><span>Rate</span><span>6.0%</span></div><div class="r"><span>Term</span><span>30 yrs</span></div>
+ <div class="r t"><span>Monthly</span><span id="pm1"></span></div></div>
+<div id="s4" style="position:absolute;inset:0;opacity:0">
+ <div class="mono" style="position:absolute;left:110px;top:430px;font-size:20px;color:#a39d90">Payment #1</div><div class="num" id="p1" style="position:absolute;right:110px;top:405px;font-size:56px;font-weight:600"></div>
+ <div class="bar" style="top:490px"><i id="b1r" style="background:url(#);background:#a34a42"></i><i id="b1g" style="background:#b8975a"></i></div>
+ <div id="b1t" style="position:absolute;left:110px;right:110px;top:620px;display:flex;justify-content:space-between;font-size:34px;font-weight:600"><span style="color:#e08a80" id="b1i"></span><span style="color:#d8b878" id="b1p"></span></div>
+ <div class="mono" style="position:absolute;left:110px;top:830px;font-size:20px;color:#a39d90">Payment #360</div>
+ <div class="bar" style="top:890px"><i id="b2r" style="background:#a34a42"></i><i id="b2g" style="background:#b8975a"></i></div>
+ <div id="b2t" style="position:absolute;left:110px;right:110px;top:1020px;display:flex;justify-content:space-between;font-size:34px;font-weight:600"><span style="color:#e08a80" id="b2i"></span><span style="color:#d8b878" id="b2p"></span></div>
+ <div class="box" id="kbox" style="left:110px;right:110px;top:1190px;text-align:center;font-size:36px;font-weight:600">Early on, you're mostly <span style="color:#e08a80">renting money.</span></div>
+</div>
+<div id="s5" style="position:absolute;inset:0;opacity:0">
+ <div class="num" style="position:absolute;left:0;right:0;top:400px;text-align:center;font-size:96px;color:#b8975a">+$200 / month</div>
+ <div class="mono" style="position:absolute;left:0;right:0;top:520px;text-align:center;font-size:22px;color:#a39d90">Extra, every month</div>
+ <div class="box" id="x1" style="left:110px;width:400px;top:640px"><div class="mono" style="font-size:16px;color:#a39d90">Interest saved</div><div class="num" style="font-size:64px;margin-top:14px;color:#d8b878" id="xs"></div></div>
+ <div class="box" id="x2" style="right:110px;width:400px;top:640px"><div class="mono" style="font-size:16px;color:#a39d90">Mortgage-free</div><div class="num" style="font-size:64px;margin-top:14px;color:#d8b878" id="xy"></div></div>
+ <div class="serif" id="q" style="position:absolute;left:0;right:0;top:960px;text-align:center;font-size:58px;font-style:italic">Worth checking yours?</div>
+</div>
+<div id="end" style="position:absolute;inset:0;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#141418">
+ <div class="serif" style="font-size:150px;color:#ece6d8;letter-spacing:-4px">Y<span style="color:#b8975a">B</span></div>
+ <div class="mono" style="font-size:30px;letter-spacing:10px;margin-top:10px">Your Brand</div>
+ <div class="mono" style="font-size:16px;color:#8a7650;margin-top:30px">Money, explained simply</div>
+</div>
+<div class="ig" id="ig"><b></b><span>@YOURHANDLE</span></div>
+<div id="src" class="mono">Source · worked example · 6% fixed, 30 yrs, monthly repayments</div>
+<script>
+// --- real maths ---
+const P=500000,r=.06/12,n=360,pm=P*r/(1-Math.pow(1+r,-n));
+const total=pm*n,interest=total-P;
+const int1=P*r,prin1=pm-int1; const intLast=pm-pm/(1+r),prinLast=pm-intLast;
+let bal=P,m=0,paidX=0;while(bal>0.005){const i=bal*r;let pay=Math.min(pm+200,bal+i);bal=bal+i-pay;paidX+=pay;m++}
+const savedX=total-paidX, early=n-m;
+const $=id=>document.getElementById(id),cl=x=>Math.max(0,Math.min(1,x)),eo=x=>1-Math.pow(1-cl(x),3),eio=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const back=x=>{x=cl(x);const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const $f=v=>'$'+Math.round(v).toLocaleString('en-US');
+$('pm1').textContent=$f(pm);$('p1').textContent=$f(pm);
+const paths=[...document.querySelectorAll('.d')];paths.forEach(p=>{const L=p.getTotalLength?p.getTotalLength():1000;p.style.strokeDasharray=L;p.dataset.L=L});
+function draw(group,t0,dur){const ps=[...document.querySelectorAll('#'+group+' .d')];ps.forEach((p,i)=>{const s=t0+i*dur*.6/ps.length;const k=eo((T-s)/(dur*.5));p.style.strokeDashoffset=p.dataset.L*(1-k);p.style.fillOpacity=k*(p.getAttribute('fill-opacity')||1)})}
+const fade=(id,a,b,c,d)=>{const v=Math.min(eo((T-a)/(b-a)),d===undefined?1:1-eo((T-c)/(d-c)));$(id).style.opacity=v;return v};
+const tags=[[0,'The loan'],[5,'The deal'],[10.5,'The real cost'],[18.5,'Where it goes'],[25.5,'The fix'],[32,'']];
+let T=0;
+window.render=t=>{T=t;
+ const tg=tags.filter(x=>t>=x[0]).pop();$('tag').textContent=tg[1];$('tag').style.opacity=t<32?1:0;$('hdl').style.opacity=t<32?1:0;$('src').style.opacity=t<32?.9:0;
+ // house: in 0-18.5, fades out for s4/s5
+ const hv=1-eo((t-18.2)/.5);
+ $('house').style.opacity=hv;$('glow').style.opacity=hv;draw('house',.2,2.2);
+ // price
+ const pv=Math.min(eo((t-1)/.5),hv);$('price').style.opacity=pv;
+ if(t<10.5){$('priceN').textContent=$f(P*eo((t-1)/1.6));$('priceL').textContent='Borrowed'}
+ else{$('priceN').textContent=$f(P+interest*eo((t-12.5)/3));$('priceL').textContent='Total you pay'}
+ $('price').style.top=(t<10.5?560:560)+'px';
+ // s2: receipt, calendar, bank
+ const rv=fade('rc1',5.2,5.7,10,10.4);$('rc1').style.transform=`translateY(${(1-eo((t-5.2)/.5))*-60}px) rotate(${(1-rv)*-4}deg)`;
+ draw('cal',5.8,1.2);draw('bank',6.4,1.2);
+ const cv=Math.min(eo((t-6.4)/.5),hv);$('calL').style.opacity=cv;$('bankL').style.opacity=Math.min(eo((t-7)/.5),hv);
+ $('cal').style.opacity=hv;$('bank').style.opacity=hv;
+ // s3: fill house with loan then interest
+ const H=420,fracG=P/total;
+ const g=eio((t-11)/1.4)*H*fracG, rr=eio((t-12.6)/2.6)*H*(1-fracG);
+ $('fillG').setAttribute('y',1280-g);$('fillG').setAttribute('height',g);$('fillR').setAttribute('y',1280-g-rr);$('fillR').setAttribute('height',rr);
+ $('lblG').style.top=(1280-g/2-40)+'px';$('lblG').style.opacity=Math.min(eo((t-11.8)/.4),hv);
+ $('lblR').style.top=(1280-g-rr/2-40)+'px';$('lblR').style.opacity=Math.min(eo((t-13.4)/.4),hv);$('lblRN').textContent=$f(interest*eo((t-12.6)/2.6));
+ const lv=Math.min(eo((t-16)/.4),hv);$('limit').setAttribute('y1',1280-H*fracG);$('limit').setAttribute('y2',1280-H*fracG);$('limit').style.opacity=lv*.7;
+ // s4
+ fade('s4',18.6,19.1,25.2,25.6);
+ const a1=eio((t-19.4)/1.2),a2=eio((t-21.6)/1.2);
+ $('b1r').style.width=(int1/pm*100*a1)+'%';$('b1g').style.width=(prin1/pm*100*a1)+'%';
+ $('b2r').style.width=(intLast/pm*100*a2)+'%';$('b2g').style.width=(prinLast/pm*100*a2)+'%';
+ $('b1i').textContent=$f(int1*a1)+' interest';$('b1p').textContent=$f(prin1*a1)+' loan';$('b1t').style.opacity=cl((t-19.6)/.4);
+ $('b2i').textContent=$f(intLast*a2)+' interest';$('b2p').textContent=$f(prinLast*a2)+' loan';$('b2t').style.opacity=cl((t-21.8)/.4);
+ $('kbox').style.opacity=cl((t-23.2)/.4);$('kbox').style.transform=`scale(${back((t-23.2)/.5)})`;
+ // s5
+ fade('s5',25.6,26.1,31.6,32);
+ $('x1').style.transform=`scale(${back((t-26.8)/.5)})`;$('x2').style.transform=`scale(${back((t-27.3)/.5)})`;
+ $('xs').textContent=$f(savedX*eo((t-26.9)/1.2));const ey=early*eo((t-27.4)/1.2);$('xy').textContent=Math.floor(ey/12)+'y '+Math.round(ey%12)+'m sooner';
+ $('q').style.opacity=cl((t-29.2)/.5);$('q').style.transform=`translateY(${(1-eo((t-29.2)/.5))*30}px)`;
+ // end card
+ fade('end',32,32.5);
+ // IG pop-ups
+ const pops=[[2.5,4.5,800,330],[8.2,10,90,1180],[15,17.3,820,880],[23.6,25,820,1360],[33,35,440,1300]];
+ const pp=pops.find(x=>t>=x[0]&&t<x[1]);const ig=$('ig');
+ if(pp){const k=Math.min(back((t-pp[0])/.4),1-eo((t-(pp[1]-.3))/.3));ig.style.opacity=cl(k);ig.style.left=pp[2]+'px';ig.style.top=pp[3]+'px';ig.style.transform=`scale(${Math.max(0,k)})`}else ig.style.opacity=0;
+};
+window.FACTS={pm,total,interest,int1,prin1,intLast,prinLast,savedX,early,m};
+render(0);
+</script>
