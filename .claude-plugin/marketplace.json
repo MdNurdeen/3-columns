@@ -1,0 +1,12 @@
+{
+  "name": "mdnurdeen-plugins",
+  "owner": { "name": "mdnurdeen" },
+  "plugins": [
+    {
+      "name": "graphify",
+      "source": "./plugins/graphify",
+      "description": "Turn a codebase (code, docs, PDFs, images, video) into a queryable knowledge graph. Adds the /graphify skill and installs the graphify CLI on session start.",
+      "version": "0.9.111"
+    }
+  ]
+}
